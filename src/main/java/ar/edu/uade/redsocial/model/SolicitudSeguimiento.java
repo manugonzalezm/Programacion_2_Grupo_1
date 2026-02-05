@@ -1,7 +1,7 @@
 package ar.edu.uade.redsocial.model;
 
 // Representa una solicitud de seguimiento entre dos clientes
-public class SolicitudSeguimiento {
+/*public class SolicitudSeguimiento {
 
     private String solicitante;
     private String solicitado;
@@ -26,6 +26,28 @@ public class SolicitudSeguimiento {
                 ", solicitado='" + solicitado + '\'' +
                 '}';
     }
+}*/
+
+public class SolicitudSeguimiento {
+
+    private String origen;
+    private String destino;
+
+    public SolicitudSeguimiento(String origen, String destino) {
+        this.origen = origen;
+        this.destino = destino;
+    }
+
+    public String getOrigen() {
+        return origen;
+    }
+
+    public String getDestino() {
+        return destino;
+    }
+
+    @Override
+    public String toString() {
+        return origen + " -> " + destino;
+    }
 }
-
-

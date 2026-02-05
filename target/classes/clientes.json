@@ -2,7 +2,7 @@
   "clientes": [
     {
       "nombre": "Alice",
-      "scoring": 95,
+      "scoring": 88,
       "siguiendo": ["Bob", "Charlie"],
       "conexiones": ["Bob", "Charlie", "David"]
     },
