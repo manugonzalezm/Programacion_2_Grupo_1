@@ -9,7 +9,9 @@ import java.util.List;
 
 public class CargadorClientesJson {
 
-    // Clases auxiliares SOLO para mapear el JSON
+    // Clases auxiliares SOLO para mapear el JSON, 
+    // Sirven solo para que Gson pueda leer el archivo clientes.json.
+    
     private static class ClienteJson {
         String nombre;
         int scoring;
