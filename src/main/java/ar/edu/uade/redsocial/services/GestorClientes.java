@@ -40,4 +40,9 @@ public class GestorClientes implements TDAClientes {
     public int cantidadClientes() {
         return clientesPorNombre.size();
     }
+
+    @Override
+    public List<Cliente> listarClientes() {
+        return new ArrayList<>(clientesPorNombre.values());
+    }
 }

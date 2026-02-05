@@ -13,4 +13,6 @@ public interface TDAClientes {
     List<Cliente> buscarPorScoring(int scoring);
 
     int cantidadClientes();
+
+    List<Cliente> listarClientes();
 }

@@ -19,7 +19,7 @@ public class CargadorClientesJson {
         List<ClienteJson> clientes;
     }
 
-    public static void cargar(GestorClientes gestor) {
+    public static void readFromFile(GestorClientes gestor) {
 
         InputStream is = CargadorClientesJson.class
                 .getClassLoader()
