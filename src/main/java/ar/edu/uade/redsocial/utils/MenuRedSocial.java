@@ -57,7 +57,7 @@ public class MenuRedSocial {
         Cliente cliente = gestorClientes.buscarPorNombre(nombre);
         
         if (cliente != null) {
-            System.out.println("\nCliente encontrado: " + cliente);
+            System.out.println("\nCliente encontrado: " + cliente.toString());
             historial.registrarAccion(new Accion("Buscar por nombre", nombre));
         } else {
             System.out.println("\nNo se encontró ningún cliente con el nombre: " + nombre);

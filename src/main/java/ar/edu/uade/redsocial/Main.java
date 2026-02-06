@@ -16,6 +16,13 @@ public class Main {
         GestorClientes gestorClientes = new GestorClientes();
         CargadorClientesJson.readFromFile(gestorClientes);
 
+        Scanner scanner = new Scanner(System.in);
+        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner);
+        menuRedSocial.cargarDatosIniciales();
+        menuRedSocial.ejecutar();
+
+        scanner.close();
+
         System.out.println("Buscar por nombre Alice:");
         System.out.println(gestorClientes.buscarPorNombre("Alice"));
 
@@ -35,12 +42,5 @@ public class Main {
 
         System.out.println("\nProcesar solicitud:");
         System.out.println(cola.procesarSolicitud());
-
-        Scanner scanner = new Scanner(System.in);
-        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner);
-        menuRedSocial.cargarDatosIniciales();
-        menuRedSocial.ejecutar();
-
-        scanner.close();
     }
 }

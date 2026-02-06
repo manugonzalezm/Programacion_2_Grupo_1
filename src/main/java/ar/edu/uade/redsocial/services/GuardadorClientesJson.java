@@ -41,6 +41,8 @@ public class GuardadorClientesJson {
                 ClienteJson cj = new ClienteJson();
                 cj.nombre = c.getNombre();
                 cj.scoring = c.getScoring();
+                cj.siguiendo = new ArrayList<>(c.getSiguiendo());
+                cj.conexiones = new ArrayList<>(c.getConexiones());
                 lista.add(cj);
             }
             ClientesJson datos = new ClientesJson();

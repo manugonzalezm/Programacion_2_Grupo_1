@@ -5,16 +5,17 @@ import com.google.gson.Gson;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CargadorClientesJson {
 
-    // Clases auxiliares SOLO para mapear el JSON, 
-    // Sirven solo para que Gson pueda leer el archivo clientes.json.
-    
+    // Clases auxiliares SOLO para mapear el JSON (clientes.json).
     private static class ClienteJson {
         String nombre;
         int scoring;
+        List<String> siguiendo = new ArrayList<>();
+        List<String> conexiones = new ArrayList<>();
     }
 
     private static class ClientesJson {
@@ -36,7 +37,7 @@ public class CargadorClientesJson {
                 gson.fromJson(new InputStreamReader(is), ClientesJson.class);
 
         for (ClienteJson cj : datos.clientes) {
-            gestor.agregarCliente(new Cliente(cj.nombre, cj.scoring));
+            gestor.agregarCliente(new Cliente(cj.nombre, cj.scoring, cj.siguiendo, cj.conexiones));
         }
     }
 }

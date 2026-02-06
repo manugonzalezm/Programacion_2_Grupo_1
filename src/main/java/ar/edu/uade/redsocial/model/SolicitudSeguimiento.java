@@ -46,6 +46,16 @@ public class SolicitudSeguimiento {
         return destino;
     }
 
+    /** Alias para uso en menú/historial: quien solicita seguir. */
+    public String getSolicitante() {
+        return origen;
+    }
+
+    /** Alias para uso en menú/historial: a quién se solicita seguir. */
+    public String getSolicitado() {
+        return destino;
+    }
+
     @Override
     public String toString() {
         return origen + " -> " + destino;

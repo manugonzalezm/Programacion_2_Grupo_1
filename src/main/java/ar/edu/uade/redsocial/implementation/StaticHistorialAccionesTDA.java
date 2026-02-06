@@ -17,7 +17,7 @@ public class StaticHistorialAccionesTDA implements HistorialAccionesTDA {
         pila.Apilar(accion);
     }
 
-    public void Deshacer() {
+    public void DeshacerUltimaAccion() {
         pila.Desapilar();
     }
 
