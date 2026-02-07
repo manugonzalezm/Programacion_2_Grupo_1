@@ -23,6 +23,20 @@ public class GestorClientes {
         return true;
     }
 
+    public boolean modificarSeguidor (Cliente cliente) {
+        if (! clientesPorNombre.containsKey(cliente.getNombre())) {
+            return false;
+        }
+
+        clientesPorNombre.put(cliente.getNombre(), cliente);
+
+        clientesPorScoring
+                .computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>())
+                .add(cliente);
+
+        return true;
+    }
+
     public Cliente buscarPorNombre(String nombre) {
         return clientesPorNombre.get(nombre);
     }

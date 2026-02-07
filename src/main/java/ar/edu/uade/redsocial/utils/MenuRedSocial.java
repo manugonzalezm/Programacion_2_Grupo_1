@@ -144,6 +144,7 @@ public class MenuRedSocial {
         
         if (solicitud != null) {
             System.out.println("\nSolicitud procesada: " + solicitud);
+            // modificarSeguidor(solicitud.get)
             historial.registrarAccion(new Accion("Procesar solicitud", 
                 solicitud.getSolicitante() + " -> " + solicitud.getSolicitado()));
         } else {
