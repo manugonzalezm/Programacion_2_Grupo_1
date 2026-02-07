@@ -22,7 +22,7 @@ public class CargadorClientesJson {
         List<ClienteJson> clientes;
     }
 
-    public static void readFromFile(GestorClientes gestor) {
+    public static void readFromFile(GestorClientes gestor) { // complejidad O(n), n = clientes en JSON
 
         InputStream is = CargadorClientesJson.class
                 .getClassLoader()

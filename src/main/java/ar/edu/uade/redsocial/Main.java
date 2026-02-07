@@ -13,17 +13,21 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
+        // Una sola instancia de cada servicio (todas respaldadas por TDAs: Cola, Pila, Diccionario)
         GestorClientes gestorClientes = new GestorClientes();
+        HistorialAcciones historial = new HistorialAcciones();
+        ColaSolicitudesSeguimiento colaSolicitudes = new ColaSolicitudesSeguimiento();
+
+        // Una sola carga; todo el flujo usa estas instancias (TDAs: Diccionario, Pila, Cola)
         CargadorClientesJson.readFromFile(gestorClientes);
 
         Scanner scanner = new Scanner(System.in);
-        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner);
-        menuRedSocial.cargarDatosIniciales();
+        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestorClientes, historial, colaSolicitudes);
         menuRedSocial.ejecutar();
 
         scanner.close();
 
-        System.out.println("Buscar por nombre Alice:");
+        /*System.out.println("Buscar por nombre Alice:");
         System.out.println(gestorClientes.buscarPorNombre("Alice"));
 
         System.out.println("\nBuscar por scoring 88:");
@@ -41,6 +45,6 @@ public class Main {
         cola.agregarSolicitud(new SolicitudSeguimiento("Bob", "Charlie"));
 
         System.out.println("\nProcesar solicitud:");
-        System.out.println(cola.procesarSolicitud());
+        System.out.println(cola.procesarSolicitud());*/
     }
 }

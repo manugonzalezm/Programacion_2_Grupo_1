@@ -14,12 +14,12 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
     Elemento[] elementos;
     int cantClaves;
 
-    public void InicializarDiccionario() {
+    public void InicializarDiccionario() { // complejidad O(1)
         elementos = new Elemento[100];
         cantClaves = 0;
     }
 
-    public void Agregar(int clave, int valor) {
+    public void Agregar(int clave, int valor) { // complejidad O(n+m), n = cantClaves, m = valores de la clave
         int posC = Clave2Indice(clave);
 
         if (posC == -1) {
@@ -40,7 +40,7 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
         }
     }
 
-    private int Clave2Indice(int clave) {
+    private int Clave2Indice(int clave) { // complejidad O(n), n = cantClaves
         int i = cantClaves - 1;
 
         while (i >= 0 && elementos[i].clave != clave) {
@@ -50,7 +50,7 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
         return i;
     }
 
-    public void Eliminar(int clave) {
+    public void Eliminar(int clave) { // complejidad O(n)
         int pos = Clave2Indice(clave);
 
         if (pos != -1) {
@@ -59,7 +59,7 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
         }
     }
 
-    public void EliminarValor(int clave, int valor) {
+    public void EliminarValor(int clave, int valor) { // complejidad O(n+m)
         int posC = Clave2Indice(clave);
 
         if (posC != -1) {
@@ -77,7 +77,7 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
         }
     }
 
-    private int Valor2Indice(Elemento e, int valor) {
+    private int Valor2Indice(Elemento e, int valor) { // complejidad O(m), m = cantValores
         int i = e.cantValores - 1;
 
         while (i >= 0 && e.valores[i] != valor) {
@@ -87,7 +87,7 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
         return i;
     }
 
-    public ConjuntoTDA Recuperar(int clave) {
+    public ConjuntoTDA Recuperar(int clave) { // complejidad O(n+m)
         ConjuntoTDA c = new DynamicConjuntoTDA();
         c.InicializarConjunto();
 
@@ -104,7 +104,7 @@ public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
         return c;
     }
 
-    public ConjuntoTDA Claves() {
+    public ConjuntoTDA Claves() { // complejidad O(n), n = cantClaves
         ConjuntoTDA c = new DynamicConjuntoTDA();
         c.InicializarConjunto();
 

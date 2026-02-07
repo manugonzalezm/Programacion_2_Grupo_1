@@ -13,12 +13,12 @@ public class StaticDiccionarioSimpleTDA implements DiccionarioSimpleTDA {
     Elemento[] elementos;
     int cant;
 
-    public void InicializarDiccionario() {
+    public void InicializarDiccionario() { // complejidad O(1)
         cant = 0;
         elementos = new Elemento[100];
     }
 
-    public void Agregar(int clave, int valor) {
+    public void Agregar(int clave, int valor) { // complejidad O(n), n = cant (usa Clave2Indice)
         int pos = Clave2Indice(clave);
 
         if (pos == -1) {
@@ -31,7 +31,7 @@ public class StaticDiccionarioSimpleTDA implements DiccionarioSimpleTDA {
         elementos[pos].valor = valor;
     }
 
-    private int Clave2Indice(int clave) {
+    private int Clave2Indice(int clave) { // complejidad O(n), n = cant
         int i = cant - 1;
 
         while (i >= 0 && elementos[i].clave != clave) {
@@ -41,7 +41,7 @@ public class StaticDiccionarioSimpleTDA implements DiccionarioSimpleTDA {
         return i;
     }
 
-    public void Eliminar(int clave) {
+    public void Eliminar(int clave) { // complejidad O(n)
         int pos = Clave2Indice(clave);
 
         if (pos != -1) {
@@ -50,12 +50,12 @@ public class StaticDiccionarioSimpleTDA implements DiccionarioSimpleTDA {
         }
     }
 
-    public int Recuperar(int clave) {
+    public int Recuperar(int clave) { // complejidad O(n)
         int pos = Clave2Indice(clave);
         return elementos[pos].valor;
     }
 
-    public ConjuntoTDA Claves() {
+    public ConjuntoTDA Claves() { // complejidad O(n), n = cant
         ConjuntoTDA c = new DynamicConjuntoTDA();
         c.InicializarConjunto();
 

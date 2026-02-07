@@ -1,16 +1,24 @@
 package ar.edu.uade.redsocial.implementation;
 
-import ar.edu.uade.redsocial.basic_tdas.implementation.StaticConjuntoTDA;
 import ar.edu.uade.redsocial.basic_tdas.implementation.StaticDiccionarioMultipleTDA;
 import ar.edu.uade.redsocial.basic_tdas.implementation.StaticDiccionarioSimpleTDA;
 import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 import ar.edu.uade.redsocial.basic_tdas.tda.DiccionarioMultipleTDA;
 import ar.edu.uade.redsocial.basic_tdas.tda.DiccionarioSimpleTDA;
+import ar.edu.uade.redsocial.model.Cliente;
 import ar.edu.uade.redsocial.tda.ClientesTDA;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementación estática de ClientesTDA usando TDAs básicos.
+ * - DiccionarioSimple: scoring (id -> scoring) — búsqueda por scoring O(n) claves, óptimo con TDA disponible.
+ * - DiccionarioMultiple: siguiendo y conexiones (id -> conjunto de ids) — recuperar O(1) por clave.
+ * - Maps nombre<->id: no hay TDA de strings en basic_tdas; se mantienen para resolución de nombres.
+ */
 public class StaticClientesTDA implements ClientesTDA {
 
     private DiccionarioSimpleTDA scoring;
@@ -20,7 +28,11 @@ public class StaticClientesTDA implements ClientesTDA {
     private Map<String, Integer> nombreToId;
     private int nextId;
 
-    public void InicializarClientes() {
+    public StaticClientesTDA() { // complejidad O(1)
+        inicializar();
+    }
+
+    private void inicializar() { // complejidad O(1)
         scoring = new StaticDiccionarioSimpleTDA();
         scoring.InicializarDiccionario();
         siguiendo = new StaticDiccionarioMultipleTDA();
@@ -32,63 +44,173 @@ public class StaticClientesTDA implements ClientesTDA {
         nextId = 0;
     }
 
-    public void AgregarCliente(String nombre, int score) {
-        if (nombreToId.containsKey(nombre)) {
-            throw new IllegalArgumentException("Cliente ya existe: " + nombre);
+    @Override
+    public boolean agregarCliente(Cliente cliente) { // complejidad O(n), n = siguiendo + conexiones del cliente
+        if (nombreToId.containsKey(cliente.getNombre())) {
+            return false;
         }
         int id = nextId++;
-        nombreToId.put(nombre, id);
-        nombres.put(id, nombre);
-        scoring.Agregar(id, score);
+        nombreToId.put(cliente.getNombre(), id);
+        nombres.put(id, cliente.getNombre());
+        scoring.Agregar(id, cliente.getScoring());
+
+        for (String seg : cliente.getSiguiendo()) {
+            if (nombreToId.containsKey(seg)) {
+                siguiendo.Agregar(id, nombreToId.get(seg));
+            }
+        }
+        for (String conn : cliente.getConexiones()) {
+            if (nombreToId.containsKey(conn)) {
+                conexiones.Agregar(id, nombreToId.get(conn));
+            }
+        }
+        return true;
     }
 
-    private int idDe(String nombre) {
+    @Override
+    public Cliente buscarPorNombre(String nombre) { // complejidad O(n), n = tamaño siguiendo + conexiones
         Integer id = nombreToId.get(nombre);
         if (id == null) {
-            throw new IllegalArgumentException("Cliente no encontrado: " + nombre);
+            return null;
         }
-        return id;
+        int score = scoring.Recuperar(id);
+        List<String> segNames = conjuntoIdANombres(siguiendo.Recuperar(id));
+        List<String> connNames = conjuntoIdANombres(conexiones.Recuperar(id));
+        return new Cliente(nombre, score, segNames, connNames);
     }
 
-    public void Seguir(String nombreCliente, String nombreSeguido) {
-        siguiendo.Agregar(idDe(nombreCliente), idDe(nombreSeguido));
-    }
-
-    public void Conectar(String nombreCliente, String nombreConexion) {
-        conexiones.Agregar(idDe(nombreCliente), idDe(nombreConexion));
-    }
-
-    public int ObtenerScoring(String nombre) {
-        return scoring.Recuperar(idDe(nombre));
-    }
-
-    public String ObtenerNombre(int id) {
-        return nombres.get(id);
-    }
-
-    public ConjuntoTDA ObtenerSeguidos(String nombre) {
-        return siguiendo.Recuperar(idDe(nombre));
-    }
-
-    public ConjuntoTDA ObtenerConexiones(String nombre) {
-        return conexiones.Recuperar(idDe(nombre));
-    }
-
-    public ConjuntoTDA ObtenerClientesPorScoring(int scoringBuscado) {
-        ConjuntoTDA resultado = new StaticConjuntoTDA();
-        resultado.InicializarConjunto();
-        ConjuntoTDA todos = scoring.Claves();
-        while (!todos.ConjuntoVacio()) {
-            int id = todos.Elegir();
-            todos.Sacar(id);
+    @Override
+    public List<Cliente> buscarPorScoring(int scoringBuscado) { // complejidad O(n*m), n = clientes, m = avg relaciones
+        List<Cliente> resultado = new ArrayList<>();
+        ConjuntoTDA claves = scoring.Claves();
+        while (!claves.ConjuntoVacio()) {
+            int id = claves.Elegir();
+            claves.Sacar(id);
             if (scoring.Recuperar(id) == scoringBuscado) {
-                resultado.Agregar(id);
+                resultado.add(buscarPorNombre(nombres.get(id)));
             }
         }
         return resultado;
     }
 
-    public ConjuntoTDA Clientes() {
-        return scoring.Claves();
+    @Override
+    public int cantidadClientes() { // complejidad O(1)
+        return nombreToId.size();
+    }
+
+    @Override
+    public List<Cliente> listarClientes() { // complejidad O(n*m), n = clientes, m = avg relaciones
+        List<Cliente> lista = new ArrayList<>();
+        ConjuntoTDA ids = scoring.Claves();
+        while (!ids.ConjuntoVacio()) {
+            int id = ids.Elegir();
+            ids.Sacar(id);
+            lista.add(buscarPorNombre(nombres.get(id)));
+        }
+        return lista;
+    }
+
+    @Override
+    public boolean modificarSeguidor(Cliente cliente) { // complejidad O(n), n = siguiendo + conexiones
+        Integer id = nombreToId.get(cliente.getNombre());
+        if (id == null) {
+            return false;
+        }
+        scoring.Agregar(id, cliente.getScoring());
+
+        ConjuntoTDA segActual = siguiendo.Recuperar(id);
+        while (!segActual.ConjuntoVacio()) {
+            int v = segActual.Elegir();
+            segActual.Sacar(v);
+            siguiendo.EliminarValor(id, v);
+        }
+        for (String seg : cliente.getSiguiendo()) {
+            if (nombreToId.containsKey(seg)) {
+                siguiendo.Agregar(id, nombreToId.get(seg));
+            }
+        }
+
+        ConjuntoTDA connActual = conexiones.Recuperar(id);
+        while (!connActual.ConjuntoVacio()) {
+            int v = connActual.Elegir();
+            connActual.Sacar(v);
+            conexiones.EliminarValor(id, v);
+        }
+        for (String conn : cliente.getConexiones()) {
+            if (nombreToId.containsKey(conn)) {
+                conexiones.Agregar(id, nombreToId.get(conn));
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(n), n = relaciones
+        Cliente cliente = buscarPorNombre(nombreCliente);
+        if (cliente == null) {
+            return false;
+        }
+        if (buscarPorNombre(nombreSeguido) == null) {
+            return false;
+        }
+        if (nombreCliente.equals(nombreSeguido)) {
+            return false;
+        }
+        if (cliente.getSiguiendo().contains(nombreSeguido)) {
+            return false;
+        }
+        List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
+        nuevoSiguiendo.add(nombreSeguido);
+        Cliente actualizado = new Cliente(cliente.getNombre(), cliente.getScoring(), nuevoSiguiendo, new ArrayList<>(cliente.getConexiones()));
+        return modificarSeguidor(actualizado);
+    }
+
+    @Override
+    public boolean eliminarCliente(String nombre) { // complejidad O(n), n = cantidad de clientes
+        Integer id = nombreToId.get(nombre);
+        if (id == null) {
+            return false;
+        }
+        ConjuntoTDA clavesSig = siguiendo.Claves();
+        while (!clavesSig.ConjuntoVacio()) {
+            int clave = clavesSig.Elegir();
+            clavesSig.Sacar(clave);
+            siguiendo.EliminarValor(clave, id);
+        }
+        ConjuntoTDA clavesConn = conexiones.Claves();
+        while (!clavesConn.ConjuntoVacio()) {
+            int clave = clavesConn.Elegir();
+            clavesConn.Sacar(clave);
+            conexiones.EliminarValor(clave, id);
+        }
+        scoring.Eliminar(id);
+        siguiendo.Eliminar(id);
+        conexiones.Eliminar(id);
+        nombres.remove(id);
+        nombreToId.remove(nombre);
+        return true;
+    }
+
+    @Override
+    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(n), n = relaciones
+        Cliente cliente = buscarPorNombre(nombreCliente);
+        if (cliente == null || !cliente.getSiguiendo().contains(nombreSeguido)) {
+            return false;
+        }
+        List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
+        nuevoSiguiendo.remove(nombreSeguido);
+        Cliente actualizado = new Cliente(cliente.getNombre(), cliente.getScoring(), nuevoSiguiendo, new ArrayList<>(cliente.getConexiones()));
+        return modificarSeguidor(actualizado);
+    }
+
+    /** Convierte un ConjuntoTDA de IDs en lista de nombres (consume el conjunto devuelto por Recuperar). */
+    private List<String> conjuntoIdANombres(ConjuntoTDA ids) { // complejidad O(n), n = tamaño del conjunto
+        List<String> list = new ArrayList<>();
+        while (!ids.ConjuntoVacio()) {
+            int id = ids.Elegir();
+            ids.Sacar(id);
+            list.add(nombres.get(id));
+        }
+        return list;
     }
 }

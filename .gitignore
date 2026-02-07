@@ -1,0 +1,28 @@
+# Directorios de compilacion Maven
+target/
+
+# Archivos compilados Java
+*.class
+
+# Archivos de log
+*.log
+
+# Archivos del IDE
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+*.iml
+*.iws
+*.ipr
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~

@@ -1,55 +1,62 @@
 package ar.edu.uade.redsocial.services;
 
+import ar.edu.uade.redsocial.implementation.StaticClientesTDA;
 import ar.edu.uade.redsocial.model.Cliente;
+import ar.edu.uade.redsocial.tda.ClientesTDA;
 
-import java.util.*;
+import java.util.List;
 
+/**
+ * Servicio de gestión de clientes. Delega en ClientesTDA (StaticClientesTDA)
+ * para usar TDAs con complejidad adecuada; mantiene la misma API pública.
+ */
 public class GestorClientes {
 
-    private Map<String, Cliente> clientesPorNombre = new HashMap<>();
-    private Map<Integer, List<Cliente>> clientesPorScoring = new TreeMap<>();
+    private final ClientesTDA clientesTDA;
 
-    public boolean agregarCliente(Cliente cliente) {
-        if (clientesPorNombre.containsKey(cliente.getNombre())) {
-            return false;
-        }
-
-        clientesPorNombre.put(cliente.getNombre(), cliente);
-
-        clientesPorScoring
-                .computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>())
-                .add(cliente);
-
-        return true;
+    public GestorClientes() { // complejidad O(1)
+        this.clientesTDA = new StaticClientesTDA();
     }
 
-    public boolean modificarSeguidor (Cliente cliente) {
-        if (! clientesPorNombre.containsKey(cliente.getNombre())) {
-            return false;
-        }
-
-        clientesPorNombre.put(cliente.getNombre(), cliente);
-
-        clientesPorScoring
-                .computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>())
-                .add(cliente);
-
-        return true;
+    public boolean agregarCliente(Cliente cliente) { // complejidad O(n), ver StaticClientesTDA
+        return clientesTDA.agregarCliente(cliente);
     }
 
-    public Cliente buscarPorNombre(String nombre) {
-        return clientesPorNombre.get(nombre);
+    public boolean modificarSeguidor(Cliente cliente) { // complejidad O(n), ver StaticClientesTDA
+        return clientesTDA.modificarSeguidor(cliente);
     }
 
-    public List<Cliente> buscarPorScoring(int scoring) {
-        return clientesPorScoring.getOrDefault(scoring, new ArrayList<>());
+    /**
+     * Aplica una relación de seguimiento (solicitante pasa a seguir a solicitado).
+     * Retorna true si ambos existen, son distintos y no se seguía ya; actualiza la lista de clientes.
+     */
+    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(n), ver StaticClientesTDA
+        return clientesTDA.agregarSeguido(nombreCliente, nombreSeguido);
     }
 
-    public int cantidadClientes() {
-        return clientesPorNombre.size();
+    /** Elimina el cliente. Usado al deshacer "Agregar cliente". */
+    public boolean eliminarCliente(String nombre) { // complejidad O(n), ver StaticClientesTDA
+        return clientesTDA.eliminarCliente(nombre);
     }
 
-    public List<Cliente> listarClientes() {
-        return new ArrayList<>(clientesPorNombre.values());
+    /** Quita un seguido. Usado al deshacer "Procesar solicitud". */
+    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(n), ver StaticClientesTDA
+        return clientesTDA.quitarSeguido(nombreCliente, nombreSeguido);
+    }
+
+    public Cliente buscarPorNombre(String nombre) { // complejidad O(n), ver StaticClientesTDA
+        return clientesTDA.buscarPorNombre(nombre);
+    }
+
+    public List<Cliente> buscarPorScoring(int scoring) { // complejidad O(n*m), ver StaticClientesTDA
+        return clientesTDA.buscarPorScoring(scoring);
+    }
+
+    public int cantidadClientes() { // complejidad O(1)
+        return clientesTDA.cantidadClientes();
+    }
+
+    public List<Cliente> listarClientes() { // complejidad O(n*m), ver StaticClientesTDA
+        return clientesTDA.listarClientes();
     }
 }

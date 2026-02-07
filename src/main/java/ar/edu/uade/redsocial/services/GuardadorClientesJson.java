@@ -24,7 +24,7 @@ public class GuardadorClientesJson {
         List<ClienteJson> clientes;
     }
 
-    public static void guardar(GestorClientes gestor) {
+    public static void guardar(GestorClientes gestor) { // complejidad O(n*m), n = clientes, m = avg relaciones
         try {
             URL url = CargadorClientesJson.class.getClassLoader().getResource("clientes.json");
             if (url == null) {
@@ -35,6 +35,11 @@ public class GuardadorClientesJson {
                 return;
             }
             Path path = Paths.get(uri);
+            // Si estamos en target/classes (Maven), guardar en src/main/resources para que se actualice el fuente
+            String pathStr = path.toString();
+            if (pathStr.contains("target" + java.io.File.separator + "classes")) {
+                path = Paths.get(pathStr.replace("target" + java.io.File.separator + "classes", "src" + java.io.File.separator + "main" + java.io.File.separator + "resources"));
+            }
 
             List<ClienteJson> lista = new ArrayList<>();
             for (Cliente c : gestor.listarClientes()) {
