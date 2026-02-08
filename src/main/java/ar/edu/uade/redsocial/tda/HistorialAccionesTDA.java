@@ -4,7 +4,7 @@ import ar.edu.uade.redsocial.model.Accion;
 
 /**
  * TDA para el historial de acciones (deshacer).
- * Replica la API de TDAHistorialAcciones; implementaciones usan PilaTDA para LIFO O(1).
+ * Implementación eficiente con ArrayDeque como pila LIFO.
  */
 public interface HistorialAccionesTDA {
 

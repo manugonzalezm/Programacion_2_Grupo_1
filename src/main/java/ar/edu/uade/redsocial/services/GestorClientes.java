@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Servicio de gestión de clientes. Delega en ClientesTDA (StaticClientesTDA)
- * para usar TDAs con complejidad adecuada; mantiene la misma API pública.
+ * con HashMap + TreeMap para búsquedas eficientes.
  */
 public class GestorClientes {
 
@@ -18,11 +18,11 @@ public class GestorClientes {
         this.clientesTDA = new StaticClientesTDA();
     }
 
-    public boolean agregarCliente(Cliente cliente) { // complejidad O(n), ver StaticClientesTDA
+    public boolean agregarCliente(Cliente cliente) { // complejidad O(s + c), s = siguiendo, c = conexiones
         return clientesTDA.agregarCliente(cliente);
     }
 
-    public boolean modificarSeguidor(Cliente cliente) { // complejidad O(n), ver StaticClientesTDA
+    public boolean modificarSeguidor(Cliente cliente) { // complejidad O(k), k = clientes con mismo scoring
         return clientesTDA.modificarSeguidor(cliente);
     }
 
@@ -30,25 +30,25 @@ public class GestorClientes {
      * Aplica una relación de seguimiento (solicitante pasa a seguir a solicitado).
      * Retorna true si ambos existen, son distintos y no se seguía ya; actualiza la lista de clientes.
      */
-    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(n), ver StaticClientesTDA
+    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(s), s = siguiendo
         return clientesTDA.agregarSeguido(nombreCliente, nombreSeguido);
     }
 
     /** Elimina el cliente. Usado al deshacer "Agregar cliente". */
-    public boolean eliminarCliente(String nombre) { // complejidad O(n), ver StaticClientesTDA
+    public boolean eliminarCliente(String nombre) { // complejidad O(n), n = total clientes
         return clientesTDA.eliminarCliente(nombre);
     }
 
     /** Quita un seguido. Usado al deshacer "Procesar solicitud". */
-    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(n), ver StaticClientesTDA
+    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(s), s = siguiendo
         return clientesTDA.quitarSeguido(nombreCliente, nombreSeguido);
     }
 
-    public Cliente buscarPorNombre(String nombre) { // complejidad O(n), ver StaticClientesTDA
+    public Cliente buscarPorNombre(String nombre) { // complejidad O(1)
         return clientesTDA.buscarPorNombre(nombre);
     }
 
-    public List<Cliente> buscarPorScoring(int scoring) { // complejidad O(n*m), ver StaticClientesTDA
+    public List<Cliente> buscarPorScoring(int scoring) { // complejidad O(log n)
         return clientesTDA.buscarPorScoring(scoring);
     }
 
@@ -56,7 +56,7 @@ public class GestorClientes {
         return clientesTDA.cantidadClientes();
     }
 
-    public List<Cliente> listarClientes() { // complejidad O(n*m), ver StaticClientesTDA
+    public List<Cliente> listarClientes() { // complejidad O(n)
         return clientesTDA.listarClientes();
     }
 }
