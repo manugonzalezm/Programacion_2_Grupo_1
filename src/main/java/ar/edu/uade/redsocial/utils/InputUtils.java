@@ -13,6 +13,16 @@ public class InputUtils {
         return scanner.nextLine().trim();
     }
     
+    public static String leerTextoNoVacio(Scanner scanner, String mensaje) {
+        while (true) {
+            String texto = leerTexto(scanner, mensaje);
+            if (!texto.isEmpty()) {
+                return texto;
+            }
+            System.out.println("El campo no puede estar vacio. Intente nuevamente.");
+        }
+    }
+    
     public static int leerEntero(Scanner scanner, String mensaje) {
         System.out.print(mensaje);
         String entrada = scanner.nextLine().trim();

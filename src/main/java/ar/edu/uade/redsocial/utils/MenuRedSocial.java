@@ -94,7 +94,7 @@ public class MenuRedSocial {
 
     private void agregarCliente() { // complejidad O(n), ver GestorClientes
         System.out.println("\n=== Agregar Cliente ===");
-        String nombre = InputUtils.leerTexto(scanner, "Ingrese el nombre del cliente: ");
+        String nombre = InputUtils.leerTextoNoVacio(scanner, "Ingrese el nombre del cliente: ");
 
         if (gestorClientes.buscarPorNombre(nombre) != null) {
             System.out.println("\nError: Ya existe un cliente con el nombre: " + nombre);
