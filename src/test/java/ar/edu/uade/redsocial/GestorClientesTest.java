@@ -66,7 +66,7 @@ class GestorClientesTest {
     @Test
     void cantidadClientes() {
         CargadorClientesJson.readFromFile(gestor);
-        assertEquals(6, gestor.cantidadClientes());
+        assertEquals(7, gestor.cantidadClientes());
     }
 
     @Test
