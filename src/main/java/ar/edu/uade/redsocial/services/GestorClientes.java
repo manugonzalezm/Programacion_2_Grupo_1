@@ -7,8 +7,8 @@ import ar.edu.uade.redsocial.tda.ClientesTDA;
 import java.util.List;
 
 /**
- * Servicio de gestión de clientes. Delega en ClientesTDA (StaticClientesTDA)
- * con HashMap + TreeMap para búsquedas eficientes.
+ * Servicio de gestión de clientes. Delega en ClientesTDA (StaticClientesTDA).
+ * Usa HashMap para búsqueda por nombre O(1) y TreeMap para búsqueda por scoring O(log n).
  */
 public class GestorClientes {
 

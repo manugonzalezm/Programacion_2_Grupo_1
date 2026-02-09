@@ -18,7 +18,6 @@ public class Main {
         HistorialAcciones historial = new HistorialAcciones();
         ColaSolicitudesSeguimiento colaSolicitudes = new ColaSolicitudesSeguimiento();
 
-        // Una sola carga; todo el flujo usa estas instancias (TDAs: Diccionario, Pila, Cola)
         CargadorClientesJson.readFromFile(gestorClientes);
 
         Scanner scanner = new Scanner(System.in);
@@ -26,25 +25,5 @@ public class Main {
         menuRedSocial.ejecutar();
 
         scanner.close();
-
-        /*System.out.println("Buscar por nombre Alice:");
-        System.out.println(gestorClientes.buscarPorNombre("Alice"));
-
-        System.out.println("\nBuscar por scoring 88:");
-        System.out.println(gestorClientes.buscarPorScoring(88));
-
-        HistorialAcciones historial = new HistorialAcciones();
-        historial.registrarAccion(new Accion("Agregar cliente", "Alice"));
-        historial.registrarAccion(new Accion("Agregar cliente", "Bob"));
-
-        System.out.println("\nDeshacer última acción:");
-        System.out.println(historial.deshacerUltimaAccion());
-
-        ColaSolicitudesSeguimiento cola = new ColaSolicitudesSeguimiento();
-        cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
-        cola.agregarSolicitud(new SolicitudSeguimiento("Bob", "Charlie"));
-
-        System.out.println("\nProcesar solicitud:");
-        System.out.println(cola.procesarSolicitud());*/
     }
 }

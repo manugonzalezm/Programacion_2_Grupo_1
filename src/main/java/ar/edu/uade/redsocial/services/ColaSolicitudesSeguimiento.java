@@ -7,7 +7,7 @@ import ar.edu.uade.redsocial.tda.SolicitudesSeguimientoTDA;
 import java.util.List;
 
 /**
- * Servicio de cola de solicitudes de seguimiento. Delega en SolicitudesSeguimientoTDA (ColaTDA)
+ * Servicio de cola de solicitudes de seguimiento. Delega en SolicitudesSeguimientoTDA (LinkedList)
  * para FIFO O(1); mantiene la misma API pública.
  */
 public class ColaSolicitudesSeguimiento {

@@ -24,7 +24,7 @@ public class GuardadorClientesJson {
         List<ClienteJson> clientes;
     }
 
-    public static void guardar(GestorClientes gestor) { // complejidad O(n*m), n = clientes, m = avg relaciones
+    public static void guardar(GestorClientes gestor) { // complejidad O(n), n = clientes
         try {
             URL url = CargadorClientesJson.class.getClassLoader().getResource("clientes.json");
             if (url == null) {

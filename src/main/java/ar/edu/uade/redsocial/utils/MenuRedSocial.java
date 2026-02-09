@@ -22,7 +22,7 @@ public class MenuRedSocial {
 
     /**
      * Constructor que recibe el scanner y los servicios ya creados (respaldados por TDAs:
-     * ClientesTDA, HistorialAccionesTDA, SolicitudesSeguimientoTDA -> Diccionario, Pila, Cola).
+     * ClientesTDA -> HashMap/TreeMap, HistorialAccionesTDA -> ArrayDeque, SolicitudesSeguimientoTDA -> LinkedList).
      * Todo el flujo usa estas mismas instancias.
      */
     public MenuRedSocial(Scanner scanner, GestorClientes gestorClientes, HistorialAcciones historial, ColaSolicitudesSeguimiento colaSolicitudes) { // complejidad O(1)
@@ -54,14 +54,14 @@ public class MenuRedSocial {
             .build();
     }
 
-    public void ejecutar() { // complejidad segun uso del menu; al salir O(n*m) por guardar
+    public void ejecutar() { // complejidad segun uso del menu; al salir O(n) por guardar
         Menu menu = crearMenu();
         menu.ejecutar(scanner);
         GuardadorClientesJson.guardar(gestorClientes);
         exportarAccionesCsv();
     }
 
-    private void buscarClientePorNombre() { // complejidad O(n), ver GestorClientes.buscarPorNombre
+    private void buscarClientePorNombre() { // complejidad O(1), HashMap.get()
         System.out.println("\n=== Buscar Cliente por nombre ===");
         String nombre = InputUtils.leerTexto(scanner, "Ingrese el nombre del cliente: ");
 
@@ -75,7 +75,7 @@ public class MenuRedSocial {
         }
     }
 
-    private void buscarClientePorScoring() { // complejidad O(n*m), ver GestorClientes.buscarPorScoring
+    private void buscarClientePorScoring() { // complejidad O(log n + k), TreeMap.get() + k resultados
         System.out.println("\n=== Buscar Cliente por Scoring ===");
         int scoring = InputUtils.leerEnteroConReintentos(scanner, "Ingrese el scoring: ");
 
@@ -92,7 +92,7 @@ public class MenuRedSocial {
         }
     }
 
-    private void agregarCliente() { // complejidad O(n), ver GestorClientes
+    private void agregarCliente() { // complejidad O(1), HashMap.put()
         System.out.println("\n=== Agregar Cliente ===");
         String nombre = InputUtils.leerTextoNoVacio(scanner, "Ingrese el nombre del cliente: ");
 
@@ -114,7 +114,7 @@ public class MenuRedSocial {
         }
     }
 
-    private void seguirCliente() { // complejidad O(n), buscarPorNombre + agregarSolicitud O(1)
+    private void seguirCliente() { // complejidad O(1), buscarPorNombre + agregarSolicitud O(1)
         System.out.println("\n=== Seguir Cliente ===");
         String seguidor = InputUtils.leerTexto(scanner, "Ingrese el nombre del seguidor: ");
         String seguido = InputUtils.leerTexto(scanner, "Ingrese el nombre del cliente a seguir: ");
@@ -181,7 +181,7 @@ public class MenuRedSocial {
         }
     }
 
-    private void procesarSolicitudesSeguimiento() { // complejidad O(1) procesar + O(n) agregarSeguido
+    private void procesarSolicitudesSeguimiento() { // complejidad O(1) procesar + O(s) agregarSeguido, s = siguiendo
         System.out.println("\n=== Procesar Solicitudes de Seguimiento ===");
 
         SolicitudSeguimiento solicitud = colaSolicitudes.procesarSolicitud();
@@ -231,7 +231,7 @@ public class MenuRedSocial {
         }
     }
 
-    private void listarTodosLosClientes() { // complejidad O(n*m)
+    private void listarTodosLosClientes() { // complejidad O(n)
         System.out.println("\n=== Lista de Clientes ===");
         List<Cliente> clientes = gestorClientes.listarClientes();
         if (clientes.isEmpty()) {

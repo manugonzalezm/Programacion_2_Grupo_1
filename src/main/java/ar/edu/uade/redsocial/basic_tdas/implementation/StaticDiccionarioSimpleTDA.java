@@ -66,4 +66,3 @@ public class StaticDiccionarioSimpleTDA implements DiccionarioSimpleTDA {
         return c;
     }
 }
-
