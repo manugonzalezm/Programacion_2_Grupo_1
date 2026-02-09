@@ -7,7 +7,7 @@ import ar.edu.uade.redsocial.tda.HistorialAccionesTDA;
 import java.util.List;
 
 /**
- * Servicio de historial de acciones (deshacer). Delega en HistorialAccionesTDA (ArrayDeque)
+ * Servicio de historial de acciones (deshacer). Delega en HistorialAccionesTDA (PilaTDA)
  * para LIFO O(1); mantiene la misma API pública.
  */
 public class HistorialAcciones {

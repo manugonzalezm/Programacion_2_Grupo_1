@@ -22,7 +22,7 @@ public class MenuRedSocial {
 
     /**
      * Constructor que recibe el scanner y los servicios ya creados (respaldados por TDAs:
-     * ClientesTDA -> HashMap/TreeMap, HistorialAccionesTDA -> ArrayDeque, SolicitudesSeguimientoTDA -> LinkedList).
+     * ClientesTDA -> HashMap/TreeMap, HistorialAccionesTDA -> PilaTDA, SolicitudesSeguimientoTDA -> ColaTDA).
      * Todo el flujo usa estas mismas instancias.
      */
     public MenuRedSocial(Scanner scanner, GestorClientes gestorClientes, HistorialAcciones historial, ColaSolicitudesSeguimiento colaSolicitudes) { // complejidad O(1)

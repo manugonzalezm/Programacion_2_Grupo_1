@@ -2,7 +2,15 @@ package ar.edu.uade.redsocial.model;
 
 import java.time.LocalDateTime;
 
-// Representa una acción realizada en el sistema
+/**
+ * Representa una acción realizada en el sistema.
+ *
+ * Invariante de representación:
+ * - tipo != null. Identifica la categoría de la acción (ej: "Agregar cliente", "Buscar por nombre").
+ * - detalle != null. Información adicional sobre la acción realizada.
+ * - fechaHora != null. Se asigna automáticamente al momento de la creación (LocalDateTime.now()).
+ * - Una vez creada, la acción es inmutable (no existen setters).
+ */
 public class Accion {
 
     private String tipo;

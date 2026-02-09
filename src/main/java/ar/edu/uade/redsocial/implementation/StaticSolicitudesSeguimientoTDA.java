@@ -1,62 +1,107 @@
 package ar.edu.uade.redsocial.implementation;
 
+import ar.edu.uade.redsocial.basic_tdas.implementation.DynamicColaTDA;
+import ar.edu.uade.redsocial.basic_tdas.tda.ColaTDA;
 import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 import ar.edu.uade.redsocial.tda.SolicitudesSeguimientoTDA;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implementación eficiente de la cola de solicitudes usando LinkedList como cola (FIFO).
+ * Implementación de la cola de solicitudes usando ColaTDA como estructura interna (FIFO).
  * - agregarSolicitud / procesarSolicitud / haySolicitudes: O(1).
- * - quitarSolicitud: O(n), usa iterator.remove() sin reconstruir la cola.
- * - listarPendientes: O(n), itera directamente sin desacolar/re-acolar.
+ * - quitarSolicitud: O(n), desacola y re-acola sin la solicitud encontrada.
+ * - listarPendientes: O(n), desacola y re-acola para recorrer.
  * Capacidad máxima: 100 solicitudes.
  */
 public class StaticSolicitudesSeguimientoTDA implements SolicitudesSeguimientoTDA {
 
     private static final int CAPACIDAD = 100;
 
-    private final LinkedList<SolicitudSeguimiento> cola = new LinkedList<>();
+    private ColaTDA cola;
+    private SolicitudSeguimiento[] registro;
+    private int nextIndex;
+
+    public StaticSolicitudesSeguimientoTDA() {
+        cola = new DynamicColaTDA();
+        cola.InicializarCola();
+        registro = new SolicitudSeguimiento[CAPACIDAD];
+        nextIndex = 0;
+    }
 
     @Override
     public void agregarSolicitud(SolicitudSeguimiento solicitud) { // complejidad O(1)
-        if (cola.size() >= CAPACIDAD) {
+        if (nextIndex >= CAPACIDAD) {
             throw new IllegalStateException("Cola de solicitudes llena");
         }
-        cola.addLast(solicitud);
+        registro[nextIndex] = solicitud;
+        cola.Acolar(nextIndex);
+        nextIndex++;
     }
 
     @Override
     public SolicitudSeguimiento procesarSolicitud() { // complejidad O(1)
-        if (cola.isEmpty()) {
+        if (cola.ColaVacia()) {
             return null;
         }
-        return cola.removeFirst();
+        int idx = cola.Primero();
+        cola.Desacolar();
+        return registro[idx];
     }
 
     @Override
     public boolean haySolicitudes() { // complejidad O(1)
-        return !cola.isEmpty();
+        return !cola.ColaVacia();
     }
 
     @Override
-    public boolean quitarSolicitud(SolicitudSeguimiento solicitud) { // complejidad O(n), sin reconstruir la cola
-        Iterator<SolicitudSeguimiento> it = cola.iterator();
-        while (it.hasNext()) {
-            SolicitudSeguimiento s = it.next();
-            if (s.getOrigen().equals(solicitud.getOrigen()) && s.getDestino().equals(solicitud.getDestino())) {
-                it.remove();
-                return true;
+    public boolean quitarSolicitud(SolicitudSeguimiento solicitud) { // complejidad O(n), desacola y re-acola
+        ColaTDA temp = new DynamicColaTDA();
+        temp.InicializarCola();
+        boolean encontrada = false;
+
+        // Desacolar todo, salteando la primera coincidencia
+        while (!cola.ColaVacia()) {
+            int idx = cola.Primero();
+            cola.Desacolar();
+            SolicitudSeguimiento s = registro[idx];
+            if (!encontrada && s.getOrigen().equals(solicitud.getOrigen())
+                    && s.getDestino().equals(solicitud.getDestino())) {
+                encontrada = true;
+            } else {
+                temp.Acolar(idx);
             }
         }
-        return false;
+
+        // Restaurar la cola sin el elemento eliminado
+        while (!temp.ColaVacia()) {
+            cola.Acolar(temp.Primero());
+            temp.Desacolar();
+        }
+
+        return encontrada;
     }
 
     @Override
-    public List<SolicitudSeguimiento> listarPendientes() { // complejidad O(n), sin modificar la cola
-        return new ArrayList<>(cola);
+    public List<SolicitudSeguimiento> listarPendientes() { // complejidad O(n), desacola y re-acola
+        List<SolicitudSeguimiento> resultado = new ArrayList<>();
+        ColaTDA temp = new DynamicColaTDA();
+        temp.InicializarCola();
+
+        while (!cola.ColaVacia()) {
+            int idx = cola.Primero();
+            cola.Desacolar();
+            resultado.add(registro[idx]);
+            temp.Acolar(idx);
+        }
+
+        // Restaurar la cola
+        while (!temp.ColaVacia()) {
+            cola.Acolar(temp.Primero());
+            temp.Desacolar();
+        }
+
+        return resultado;
     }
 }

@@ -4,7 +4,7 @@ import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 
 /**
  * TDA para manejar solicitudes de seguimiento en orden FIFO.
- * Implementación eficiente con LinkedList como cola.
+ * Implementación con ColaTDA como estructura interna (FIFO).
  */
 public interface SolicitudesSeguimientoTDA {
 

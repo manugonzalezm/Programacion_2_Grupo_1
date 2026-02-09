@@ -4,7 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// Representa a un cliente de la red social (campos alineados con clientes.json)
+/**
+ * Representa a un cliente de la red social (campos alineados con clientes.json).
+ *
+ * Invariante de representación:
+ * - nombre != null y no vacío. Identifica de forma única al cliente.
+ * - scoring >= 0. Representa la puntuación del cliente.
+ * - siguiendo != null. Lista de nombres de clientes a los que sigue (sin duplicados).
+ * - conexiones != null. Lista de nombres de clientes conectados (sin duplicados).
+ * - Las listas se exponen como inmutables (Collections.unmodifiableList) para evitar modificación externa.
+ * - Un cliente no puede seguirse a sí mismo (su nombre no aparece en siguiendo).
+ */
 public class Cliente {
 
     private String nombre;
