@@ -51,4 +51,6 @@ public interface ClientesTDA {
      * Retorna true si existía y se quitó. Usado para deshacer "Procesar solicitud".
      */
     boolean quitarSeguido(String nombreCliente, String nombreSeguido); // complejidad O(s)
+
+    
 }

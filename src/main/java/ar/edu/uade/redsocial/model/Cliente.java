@@ -21,6 +21,10 @@ public class Cliente {
     private int scoring;
     private List<String> siguiendo;
     private List<String> conexiones;
+    private List<Accion> acciones = new ArrayList<>();
+    /*cada cliente tiene:
+        Historial global (pila)
+        Historial propio   */
 
     public Cliente(String nombre, int scoring) {
         this(nombre, scoring, new ArrayList<>(), new ArrayList<>());
@@ -48,6 +52,15 @@ public class Cliente {
     public List<String> getConexiones() {
         return Collections.unmodifiableList(conexiones);
     }
+
+    public void agregarAccion(Accion accion) {
+        acciones.add(accion);
+    }
+
+    public List<Accion> getAcciones() {
+        return Collections.unmodifiableList(acciones);
+    }
+
 
     @Override
     public String toString() {

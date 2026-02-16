@@ -19,6 +19,8 @@ public class MenuRedSocial {
     private final HistorialAcciones historial;
     private final ColaSolicitudesSeguimiento colaSolicitudes;
     private final Scanner scanner;
+    private Cliente usuarioLogueado;
+
 
     /**
      * Constructor que recibe el scanner y los servicios ya creados (respaldados por TDAs:
@@ -40,6 +42,7 @@ public class MenuRedSocial {
 
     public Menu crearMenu() { // complejidad O(1)
         return new MenuBuilder("MENU - RED SOCIAL EMPRESARIAL")
+            .agregarOpcion("0", "Iniciar Sesion", scanner -> login())
             .agregarOpcion("1", "Buscar Cliente por nombre", scanner -> buscarClientePorNombre())
             .agregarOpcion("2", "Buscar Cliente por Scoring", scanner -> buscarClientePorScoring())
             .agregarOpcion("3", "Agregar Cliente", scanner -> agregarCliente())
@@ -49,6 +52,8 @@ public class MenuRedSocial {
             .agregarOpcion("7", "Listar solicitudes pendientes", () -> listarSolicitudesPendientes())
             .agregarOpcion("8", "Listar ultimas 10 acciones", () -> listarUltimasAcciones())
             .agregarOpcion("9", "Listar todos los clientes", () -> listarTodosLosClientes())
+            .agregarOpcion("10", "Cerrar Sesion", scanner -> logout())
+
             .setMensajeSalida("Saliendo del sistema...")
             .setLimpiarConsola(false)
             .build();
@@ -114,27 +119,33 @@ public class MenuRedSocial {
         }
     }
 
-    private void seguirCliente() { // complejidad O(1), buscarPorNombre + agregarSolicitud O(1)
-        System.out.println("\n=== Seguir Cliente ===");
-        String seguidor = InputUtils.leerTexto(scanner, "Ingrese el nombre del seguidor: ");
+    private void seguirCliente() {
+
+        if (usuarioLogueado == null) {
+            System.out.println("Debe iniciar sesion primero.");
+            return;
+        }
+
         String seguido = InputUtils.leerTexto(scanner, "Ingrese el nombre del cliente a seguir: ");
 
-        if (gestorClientes.buscarPorNombre(seguidor) == null) {
-            System.out.println("\nError: No existe un cliente con el nombre: " + seguidor);
-            return;
-        }
-
         if (gestorClientes.buscarPorNombre(seguido) == null) {
-            System.out.println("\nError: No existe un cliente con el nombre: " + seguido);
+            System.out.println("No existe ese cliente.");
             return;
         }
 
-        SolicitudSeguimiento solicitud = new SolicitudSeguimiento(seguidor, seguido);
+        SolicitudSeguimiento solicitud =
+                new SolicitudSeguimiento(usuarioLogueado.getNombre(), seguido);
+
         colaSolicitudes.agregarSolicitud(solicitud);
 
-        System.out.println("\nSolicitud de seguimiento agregada a la cola.");
-        historial.registrarAccion(new Accion("Seguir cliente", seguidor + " -> " + seguido));
+        historial.registrarAccion(
+            new Accion("Seguir cliente",
+                    usuarioLogueado.getNombre() + " -> " + seguido)
+        );
+
+        System.out.println("Solicitud enviada.");
     }
+
 
     private void deshacerUltimaAccion() { // complejidad O(1) o O(n) segun tipo
         System.out.println("\n=== Deshacer Ultima Accion ===");
@@ -256,4 +267,46 @@ public class MenuRedSocial {
             }
         }
     }
+
+    private void login() {
+
+        System.out.println("\n=== Iniciar Sesion ===");
+
+        String nombre = InputUtils.leerTextoNoVacio(
+                scanner,
+                "Ingrese su nombre: "
+        );
+
+        Cliente cliente = gestorClientes.buscarPorNombre(nombre);
+
+        if (cliente != null) {
+            usuarioLogueado = cliente;
+            System.out.println("Sesion iniciada como: " + nombre);
+
+            historial.registrarAccion(
+                    new Accion("Login", nombre)
+            );
+
+        } else {
+            System.out.println("No existe un cliente con ese nombre.");
+        }
+    }
+
+    private void logout() {
+        if (usuarioLogueado == null) {
+            System.out.println("No hay sesion iniciada.");
+            return;
+        }
+
+        historial.registrarAccion(
+                new Accion("Logout", usuarioLogueado.getNombre())
+        );
+
+        System.out.println("Sesion cerrada: " + usuarioLogueado.getNombre());
+
+        usuarioLogueado = null;
+    }
+
+
+
 }
