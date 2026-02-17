@@ -12,157 +12,246 @@ import java.util.TreeMap;
 /**
  * Implementación eficiente de ClientesTDA usando HashMap y TreeMap.
  * - HashMap nombre -> Cliente: búsqueda por nombre O(1).
- * - TreeMap scoring -> List(Cliente): búsqueda por scoring O(log n) acceso + O(1) lista.
+ * - TreeMap scoring -> List(String nombre): índice por scoring O(log n).
  */
 public class StaticClientesTDA implements ClientesTDA {
 
     private final Map<String, Cliente> clientesPorNombre = new HashMap<>();
-    private final Map<Integer, List<Cliente>> clientesPorScoring = new TreeMap<>();
+    private final Map<Integer, List<String>> clientesPorScoring = new TreeMap<>();
 
     @Override
-    public boolean agregarCliente(Cliente cliente) { // complejidad O(s + c), s = siguiendo, c = conexiones
+    public boolean agregarCliente(Cliente cliente) {
+
         if (clientesPorNombre.containsKey(cliente.getNombre())) {
             return false;
         }
-        // Filtrar siguiendo/conexiones a solo clientes existentes
-        List<String> sigValidos = new ArrayList<>();
-        for (String s : cliente.getSiguiendo()) {
-            if (clientesPorNombre.containsKey(s)) {
-                sigValidos.add(s);
-            }
-        }
-        List<String> connValidos = new ArrayList<>();
-        for (String c : cliente.getConexiones()) {
-            if (clientesPorNombre.containsKey(c)) {
-                connValidos.add(c);
-            }
-        }
-        Cliente clienteValido = new Cliente(cliente.getNombre(), cliente.getScoring(), sigValidos, connValidos);
+
+        Cliente clienteValido = new Cliente(
+                cliente.getNombre(),
+                cliente.getScoring(),
+                cliente.getSiguiendo(),
+                cliente.getConexiones(),
+                cliente.getSolicitudesPendientes()
+        );
+
         clientesPorNombre.put(clienteValido.getNombre(), clienteValido);
-        clientesPorScoring.computeIfAbsent(clienteValido.getScoring(), k -> new ArrayList<>()).add(clienteValido);
+
+        clientesPorScoring
+                .computeIfAbsent(clienteValido.getScoring(), k -> new ArrayList<>())
+                .add(clienteValido.getNombre());
+
         return true;
     }
 
     @Override
-    public Cliente buscarPorNombre(String nombre) { // complejidad O(1)
+    public Cliente buscarPorNombre(String nombre) {
         return clientesPorNombre.get(nombre);
     }
 
     @Override
-    public List<Cliente> buscarPorScoring(int scoring) { // complejidad O(log n) por TreeMap
-        return new ArrayList<>(clientesPorScoring.getOrDefault(scoring, new ArrayList<>()));
+    public List<Cliente> buscarPorScoring(int scoring) {
+
+        List<String> nombres =
+                clientesPorScoring.getOrDefault(scoring, new ArrayList<>());
+
+        List<Cliente> resultado = new ArrayList<>();
+
+        for (String nombre : nombres) {
+            Cliente cliente = clientesPorNombre.get(nombre);
+            if (cliente != null) {
+                resultado.add(cliente);
+            }
+        }
+
+        return resultado;
     }
 
     @Override
-    public int cantidadClientes() { // complejidad O(1)
+    public int cantidadClientes() {
         return clientesPorNombre.size();
     }
 
     @Override
-    public List<Cliente> listarClientes() { // complejidad O(n)
+    public List<Cliente> listarClientes() {
         return new ArrayList<>(clientesPorNombre.values());
     }
 
     @Override
-    public boolean modificarSeguidor(Cliente cliente) { // complejidad O(k), k = clientes con mismo scoring viejo
+    public boolean modificarSeguidor(Cliente cliente) {
+
         String nombre = cliente.getNombre();
         Cliente existente = clientesPorNombre.get(nombre);
+
         if (existente == null) {
             return false;
         }
-        // Quitar de la lista del scoring anterior
+
+        // Quitar del índice anterior
         quitarDeScoring(existente);
-        // Poner el cliente actualizado
+
+        // Actualizar en HashMap
         clientesPorNombre.put(nombre, cliente);
-        clientesPorScoring.computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>()).add(cliente);
+
+        // Agregar al nuevo índice
+        clientesPorScoring
+                .computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>())
+                .add(cliente.getNombre());
+
         return true;
     }
 
     @Override
-    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(s), s = siguiendo del cliente
-        Cliente cliente = clientesPorNombre.get(nombreCliente);
-        if (cliente == null) {
-            return false;
-        }
-        if (!clientesPorNombre.containsKey(nombreSeguido)) {
-            return false;
-        }
-        if (nombreCliente.equals(nombreSeguido)) {
-            return false;
-        }
-        if (cliente.getSiguiendo().contains(nombreSeguido)) {
-            return false;
-        }
-        List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
-        nuevoSiguiendo.add(nombreSeguido);
-        Cliente actualizado = new Cliente(cliente.getNombre(), cliente.getScoring(),
-                nuevoSiguiendo, new ArrayList<>(cliente.getConexiones()));
-        return modificarSeguidor(actualizado);
+    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) {
+
+        //Ahora solo envía solicitud
+        return enviarSolicitud(nombreCliente, nombreSeguido);
     }
+    
+
 
     @Override
-    public boolean eliminarCliente(String nombre) { // complejidad O(n), n = total clientes (limpiar refs)
-        Cliente cliente = clientesPorNombre.get(nombre);
-        if (cliente == null) {
-            return false;
-        }
-        // Quitar del mapa de scoring
-        quitarDeScoring(cliente);
-        // Quitar del mapa de nombre
-        clientesPorNombre.remove(nombre);
-        // Limpiar referencias en otros clientes
-        for (Map.Entry<String, Cliente> entry : clientesPorNombre.entrySet()) {
-            Cliente c = entry.getValue();
-            boolean tieneSiguiendo = c.getSiguiendo().contains(nombre);
-            boolean tieneConexion = c.getConexiones().contains(nombre);
-            if (tieneSiguiendo || tieneConexion) {
-                List<String> newSig = new ArrayList<>(c.getSiguiendo());
-                List<String> newConn = new ArrayList<>(c.getConexiones());
-                if (tieneSiguiendo) newSig.remove(nombre);
-                if (tieneConexion) newConn.remove(nombre);
-                Cliente limpio = new Cliente(c.getNombre(), c.getScoring(), newSig, newConn);
-                entry.setValue(limpio);
-                // Actualizar la referencia en el mapa de scoring
-                reemplazarEnScoring(c, limpio);
-            }
-        }
-        return true;
-    }
+    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) {
 
-    @Override
-    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(s), s = siguiendo del cliente
         Cliente cliente = clientesPorNombre.get(nombreCliente);
-        if (cliente == null || !cliente.getSiguiendo().contains(nombreSeguido)) {
-            return false;
-        }
+        if (cliente == null) return false;
+        if (!cliente.getSiguiendo().contains(nombreSeguido)) return false;
+
         List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
         nuevoSiguiendo.remove(nombreSeguido);
-        Cliente actualizado = new Cliente(cliente.getNombre(), cliente.getScoring(),
-                nuevoSiguiendo, new ArrayList<>(cliente.getConexiones()));
-        return modificarSeguidor(actualizado);
+
+        Cliente actualizado = new Cliente(
+                cliente.getNombre(),
+                cliente.getScoring(),
+                nuevoSiguiendo,
+                cliente.getConexiones(),
+                cliente.getSolicitudesPendientes()
+        );
+
+        clientesPorNombre.put(nombreCliente, actualizado);
+
+        return true;
     }
 
-    /** Quita un cliente de la lista del TreeMap de scoring. */
-    private void quitarDeScoring(Cliente cliente) { // complejidad O(k), k = clientes con mismo scoring
-        List<Cliente> lista = clientesPorScoring.get(cliente.getScoring());
+
+    
+    @Override
+    public boolean eliminarCliente(String nombre) {
+
+        Cliente cliente = clientesPorNombre.get(nombre);
+        if (cliente == null) return false;
+
+        quitarDeScoring(cliente);
+        clientesPorNombre.remove(nombre);
+
+        for (Cliente c : clientesPorNombre.values()) {
+            c.getSiguiendo().remove(nombre);
+            c.getConexiones().remove(nombre);
+            c.getSolicitudesPendientes().remove(nombre);
+        }
+
+        return true;
+    }
+
+
+    /** Quita un cliente del índice por scoring */
+    private void quitarDeScoring(Cliente cliente) {
+
+        List<String> lista = clientesPorScoring.get(cliente.getScoring());
+
         if (lista != null) {
-            lista.removeIf(c -> c.getNombre().equals(cliente.getNombre()));
+
+            lista.removeIf(nombre -> nombre.equals(cliente.getNombre()));
+
             if (lista.isEmpty()) {
                 clientesPorScoring.remove(cliente.getScoring());
             }
         }
     }
 
-    /** Reemplaza la referencia vieja de un cliente por la nueva en el mapa de scoring. */
-    private void reemplazarEnScoring(Cliente viejo, Cliente nuevo) { // complejidad O(k), k = clientes con mismo scoring
-        List<Cliente> lista = clientesPorScoring.get(viejo.getScoring());
-        if (lista != null) {
-            for (int i = 0; i < lista.size(); i++) {
-                if (lista.get(i).getNombre().equals(viejo.getNombre())) {
-                    lista.set(i, nuevo);
-                    return;
-                }
-            }
-        }
+    
+    public boolean enviarSolicitud(String emisor, String receptor) {
+
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        if (clienteReceptor == null) return false;
+        if (emisor.equals(receptor)) return false;
+        if (clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
+
+        List<String> nuevasSolicitudes =
+                new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
+        nuevasSolicitudes.add(emisor);
+
+        Cliente actualizado = new Cliente(
+                clienteReceptor.getNombre(),
+                clienteReceptor.getScoring(),
+                clienteReceptor.getSiguiendo(),
+                clienteReceptor.getConexiones(),
+                nuevasSolicitudes
+        );
+
+        clientesPorNombre.put(receptor, actualizado);
+
+        return true;
+    }
+
+    public boolean aceptarSolicitud(String receptor, String emisor) {
+
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        Cliente clienteEmisor = clientesPorNombre.get(emisor);
+
+        if (clienteReceptor == null || clienteEmisor == null) return false;
+        if (!clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
+
+        // quitar solicitud
+        List<String> nuevasSolicitudes =
+                new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
+        nuevasSolicitudes.remove(emisor);
+
+        Cliente receptorActualizado = new Cliente(
+                clienteReceptor.getNombre(),
+                clienteReceptor.getScoring(),
+                clienteReceptor.getSiguiendo(),
+                clienteReceptor.getConexiones(),
+                nuevasSolicitudes
+        );
+        clientesPorNombre.put(receptor, receptorActualizado);
+
+        // agregar en siguiendo del emisor
+        List<String> nuevoSiguiendo =
+                new ArrayList<>(clienteEmisor.getSiguiendo());
+        nuevoSiguiendo.add(receptor);
+
+        Cliente emisorActualizado = new Cliente(
+                clienteEmisor.getNombre(),
+                clienteEmisor.getScoring(),
+                nuevoSiguiendo,
+                clienteEmisor.getConexiones(),
+                clienteEmisor.getSolicitudesPendientes()
+        );
+        clientesPorNombre.put(emisor, emisorActualizado);
+
+        return true;
+    }
+
+    public boolean rechazarSolicitud(String receptor, String emisor) {
+
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        if (clienteReceptor == null) return false;
+        if (!clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
+
+        List<String> nuevasSolicitudes =
+                new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
+        nuevasSolicitudes.remove(emisor);
+
+        Cliente actualizado = new Cliente(
+                clienteReceptor.getNombre(),
+                clienteReceptor.getScoring(),
+                clienteReceptor.getSiguiendo(),
+                clienteReceptor.getConexiones(),
+                nuevasSolicitudes
+        );
+
+        clientesPorNombre.put(receptor, actualizado);
+
+        return true;
     }
 }
