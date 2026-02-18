@@ -37,7 +37,14 @@ public class CargadorClientesJson {
                 gson.fromJson(new InputStreamReader(is), ClientesJson.class);
 
         for (ClienteJson cj : datos.clientes) {
-            gestor.agregarCliente(new Cliente(cj.nombre, cj.scoring, cj.siguiendo, cj.conexiones));
+            gestor.agregarCliente(
+                new Cliente(cj.nombre,
+                            cj.scoring,
+                            cj.siguiendo,
+                            cj.conexiones,
+                            new ArrayList<>())   // solicitudesPendientes vacía
+            );
+
         }
     }
 }

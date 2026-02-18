@@ -2,6 +2,7 @@ package ar.edu.uade.redsocial.implementation;
 
 import ar.edu.uade.redsocial.model.Cliente;
 import ar.edu.uade.redsocial.tda.ClientesTDA;
+import ar.edu.uade.redsocial.EstructuraABB.ABB;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +12,8 @@ import java.util.TreeMap;
 
 /**
  * Implementación eficiente de ClientesTDA usando HashMap y TreeMap.
- * - HashMap nombre -> Cliente: búsqueda por nombre O(1).
- * - TreeMap scoring -> List(String nombre): índice por scoring O(log n).
+ * - HashMap nombre -> Buscar cliente por nombre → O(1)
+ * - TreeMap scoring -> Insertar por scoring → O(log n)
  */
 public class StaticClientesTDA implements ClientesTDA {
 
@@ -168,7 +169,7 @@ public class StaticClientesTDA implements ClientesTDA {
         }
     }
 
-    
+
     public boolean enviarSolicitud(String emisor, String receptor) {
 
         Cliente clienteReceptor = clientesPorNombre.get(receptor);
@@ -200,6 +201,9 @@ public class StaticClientesTDA implements ClientesTDA {
 
         if (clienteReceptor == null || clienteEmisor == null) return false;
         if (!clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
+
+        //Cada cliente puede seguir hasta dos clientes
+        if (clienteEmisor.getSiguiendo().size() >= 2) return false;
 
         // quitar solicitud
         List<String> nuevasSolicitudes =
@@ -254,4 +258,48 @@ public class StaticClientesTDA implements ClientesTDA {
 
         return true;
     }
+
+
+    public void consultarConexiones(String nombre) {
+        Cliente cliente = clientesPorNombre.get(nombre);
+        if (cliente == null) {
+            System.out.println("Cliente no encontrado");
+            return;
+        }
+
+        ABB<Integer> arbol = new ABB<>();
+
+        for (String seguido : cliente.getSiguiendo()) {
+            Cliente c = clientesPorNombre.get(seguido);
+            if (c != null) {
+                arbol.agregar(c.getScoring());
+            }
+        }
+
+        System.out.println("Clientes en nivel 4:");
+        arbol.imprimirNivel(4);
+    }
+
+
+    public void consultarConexionesNivel4(String nombre) {
+        Cliente cliente = clientesPorNombre.get(nombre);  // O(1)
+        if (cliente == null) {
+            System.out.println("Cliente no encontrado");
+            return;
+        }
+
+        ABB<Integer> arbol = new ABB<>(); // O(1)
+
+        for (String seguido : cliente.getSiguiendo()) {  // O(k) ，k = cantidad de seguidos (máx 2)
+            Cliente c = clientesPorNombre.get(seguido);
+            if (c != null) {
+                arbol.agregar(c.getScoring());
+            }
+        }
+
+        System.out.println("Clientes en nivel 4:");
+        arbol.imprimirNivel(4);
+    }
+
+
 }

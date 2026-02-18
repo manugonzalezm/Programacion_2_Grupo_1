@@ -53,7 +53,6 @@ public class MenuRedSocial {
             .agregarOpcion("8", "Listar ultimas 10 acciones", () -> listarUltimasAcciones())
             .agregarOpcion("9", "Listar todos los clientes", () -> listarTodosLosClientes())
             .agregarOpcion("10", "Cerrar Sesion", scanner -> logout())
-
             .setMensajeSalida("Saliendo del sistema...")
             .setLimpiarConsola(false)
             .build();

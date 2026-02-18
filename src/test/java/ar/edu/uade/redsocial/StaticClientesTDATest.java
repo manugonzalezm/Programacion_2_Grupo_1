@@ -69,7 +69,7 @@ class StaticClientesTDATest {
     @Test
     void agregarConSiguiendo() {
         clientes.agregarCliente(new Cliente("A", 50));
-        clientes.agregarCliente(new Cliente("B", 60, Arrays.asList("A"), Arrays.asList()));
+        clientes.agregarCliente(new Cliente("B", 60,Arrays.asList("A"),Arrays.asList(),Arrays.asList()));
         Cliente b = clientes.buscarPorNombre("B");
         assertTrue(b.getSiguiendo().contains("A"));
     }
@@ -77,7 +77,7 @@ class StaticClientesTDATest {
     @Test
     void agregarConConexiones() {
         clientes.agregarCliente(new Cliente("A", 50));
-        clientes.agregarCliente(new Cliente("B", 60, Arrays.asList(), Arrays.asList("A")));
+        clientes.agregarCliente(new Cliente("B", 60,Arrays.asList(),Arrays.asList("A"),Arrays.asList()));
         Cliente b = clientes.buscarPorNombre("B");
         assertTrue(b.getConexiones().contains("A"));
     }
@@ -165,7 +165,7 @@ class StaticClientesTDATest {
     @Test
     void agregarConSiguiendoReferenciaNoExistente() {
         // Si un siguiendo referencia alguien que no fue cargado aun, se ignora
-        clientes.agregarCliente(new Cliente("A", 50, Arrays.asList("Ghost"), Arrays.asList()));
+        clientes.agregarCliente(new Cliente("A", 50,Arrays.asList("Ghost"),Arrays.asList(),Arrays.asList()));
         Cliente a = clientes.buscarPorNombre("A");
         assertTrue(a.getSiguiendo().isEmpty());
     }

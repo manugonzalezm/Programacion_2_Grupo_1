@@ -1,5 +1,6 @@
 package ar.edu.uade.redsocial;
 
+import ar.edu.uade.redsocial.implementation.StaticClientesTDA;
 import ar.edu.uade.redsocial.model.Cliente;
 import ar.edu.uade.redsocial.services.CargadorClientesJson;
 import ar.edu.uade.redsocial.services.GestorClientes;
@@ -174,4 +175,55 @@ class GestorClientesTest {
         Cliente a = gestor.buscarPorNombre("A");
         assertNotNull(a);
     }
+
+
+    @Test
+    public void noDebePermitirMasDeDosSeguidos() {
+
+        StaticClientesTDA sistema = new StaticClientesTDA();
+
+        Cliente a = new Cliente("A", 10);
+        Cliente b = new Cliente("B", 20);
+        Cliente c = new Cliente("C", 30);
+        Cliente d = new Cliente("D", 40);
+
+        sistema.agregarCliente(a);
+        sistema.agregarCliente(b);
+        sistema.agregarCliente(c);
+        sistema.agregarCliente(d);
+
+        sistema.enviarSolicitud("A", "B");
+        sistema.aceptarSolicitud("B", "A");
+
+        sistema.enviarSolicitud("A", "C");
+        sistema.aceptarSolicitud("C", "A");
+
+        // Tercera solicitud
+        sistema.enviarSolicitud("A", "D");
+        boolean resultado = sistema.aceptarSolicitud("D", "A");
+
+        assertFalse(resultado);
+    }
+
+
+    @Test
+    public void aceptarSolicitudDebeAgregarSeguido() {
+
+        StaticClientesTDA sistema = new StaticClientesTDA();
+
+        Cliente a = new Cliente("A", 10);
+        Cliente b = new Cliente("B", 20);
+
+        sistema.agregarCliente(a);
+        sistema.agregarCliente(b);
+
+        sistema.enviarSolicitud("A", "B");
+        sistema.aceptarSolicitud("B", "A");
+
+        Cliente actualizado = sistema.buscarPorNombre("A");
+
+        assertTrue(actualizado.getSiguiendo().contains("B"));
+    }
+
+
 }

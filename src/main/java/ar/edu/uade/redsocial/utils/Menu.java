@@ -17,7 +17,7 @@ public class Menu {
         this.titulo = "MENU";
         this.opciones = new ArrayList<>();
         this.mensajeSalida = "Saliendo...";
-        this.opcionSalida = "0";
+        this.opcionSalida = "11";
         this.limpiarConsola = false;
     }
     
