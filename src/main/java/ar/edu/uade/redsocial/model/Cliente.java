@@ -5,15 +5,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Representa a un cliente de la red social (campos alineados con clientes.json).
+ * Representa a un cliente de la red social.
  *
  * Invariante de representación:
- * - nombre != null y no vacío. Identifica de forma única al cliente.
- * - scoring >= 0. Representa la puntuación del cliente.
- * - siguiendo != null. Lista de nombres de clientes a los que sigue (sin duplicados).
- * - conexiones != null. Lista de nombres de clientes conectados (sin duplicados).
- * - Las listas se exponen como inmutables (Collections.unmodifiableList) para evitar modificación externa.
- * - Un cliente no puede seguirse a sí mismo (su nombre no aparece en siguiendo).
+ * - nombre != null y no vacío.
+ * - scoring >= 0.
+ * - siguiendo != null (sin duplicados).
+ * - conexiones != null (sin duplicados).
+ * - solicitudesPendientes != null.
+ * - Las listas se exponen como inmutables.
  */
 public class Cliente {
 
@@ -21,20 +21,43 @@ public class Cliente {
     private int scoring;
     private List<String> siguiendo;
     private List<String> conexiones;
+    private List<String> solicitudesPendientes;
     private List<Accion> acciones = new ArrayList<>();
-    /*cada cliente tiene:
-        Historial global (pila)
-        Historial propio   */
 
+    // 🔹 Constructor simple
     public Cliente(String nombre, int scoring) {
-        this(nombre, scoring, new ArrayList<>(), new ArrayList<>());
+        this(nombre, scoring, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
-    public Cliente(String nombre, int scoring, List<String> siguiendo, List<String> conexiones) {
+    // 🔹 Constructor intermedio (compatibilidad con tests viejos)
+    public Cliente(String nombre,
+                   int scoring,
+                   List<String> siguiendo,
+                   List<String> conexiones) {
+        this(nombre, scoring, siguiendo, conexiones, new ArrayList<>());
+    }
+
+    // 🔹 Constructor completo
+    public Cliente(String nombre,
+                   int scoring,
+                   List<String> siguiendo,
+                   List<String> conexiones,
+                   List<String> solicitudesPendientes) {
+
         this.nombre = nombre;
         this.scoring = scoring;
-        this.siguiendo = siguiendo != null ? new ArrayList<>(siguiendo) : new ArrayList<>();
-        this.conexiones = conexiones != null ? new ArrayList<>(conexiones) : new ArrayList<>();
+
+        this.siguiendo = siguiendo != null
+                ? new ArrayList<>(siguiendo)
+                : new ArrayList<>();
+
+        this.conexiones = conexiones != null
+                ? new ArrayList<>(conexiones)
+                : new ArrayList<>();
+
+        this.solicitudesPendientes = solicitudesPendientes != null
+                ? new ArrayList<>(solicitudesPendientes)
+                : new ArrayList<>();
     }
 
     public String getNombre() {
@@ -53,6 +76,10 @@ public class Cliente {
         return Collections.unmodifiableList(conexiones);
     }
 
+    public List<String> getSolicitudesPendientes() {
+        return Collections.unmodifiableList(solicitudesPendientes);
+    }
+
     public void agregarAccion(Accion accion) {
         acciones.add(accion);
     }
@@ -61,12 +88,14 @@ public class Cliente {
         return Collections.unmodifiableList(acciones);
     }
 
-
     @Override
     public String toString() {
-        return "Nombre='" + nombre + '\'' +
-                ", Scoring=" + scoring +
-                ", Siguiendo=" + siguiendo +
-                ", Conexiones=" + conexiones;
+        return "Cliente{" +
+                "nombre='" + nombre + '\'' +
+                ", scoring=" + scoring +
+                ", siguiendo=" + siguiendo +
+                ", conexiones=" + conexiones +
+                ", solicitudesPendientes=" + solicitudesPendientes +
+                '}';
     }
 }
