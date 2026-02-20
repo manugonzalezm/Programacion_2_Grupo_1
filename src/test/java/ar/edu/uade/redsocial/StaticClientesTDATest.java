@@ -169,4 +169,56 @@ class StaticClientesTDATest {
         Cliente a = clientes.buscarPorNombre("A");
         assertTrue(a.getSiguiendo().isEmpty());
     }
+
+    // ─── Límite de 2 seguidos ───
+
+    @Test
+    void agregarSeguidoMaximoDos() {
+        clientes.agregarCliente(new Cliente("A", 50));
+        clientes.agregarCliente(new Cliente("B", 60));
+        clientes.agregarCliente(new Cliente("C", 70));
+        clientes.agregarCliente(new Cliente("D", 80));
+
+        assertTrue(clientes.agregarSeguido("A", "B"));
+        assertTrue(clientes.agregarSeguido("A", "C"));
+        assertFalse(clientes.agregarSeguido("A", "D"));
+        assertEquals(2, clientes.buscarPorNombre("A").getSiguiendo().size());
+    }
+
+    // ─── Consulta ABB nivel 4 ───
+
+    @Test
+    void consultarConexionesNivel4ClienteNoExiste() {
+        assertTrue(clientes.consultarConexionesNivel4("Ghost").isEmpty());
+    }
+
+    @Test
+    void consultarConexionesNivel4SinSeguidos() {
+        clientes.agregarCliente(new Cliente("A", 50));
+        assertTrue(clientes.consultarConexionesNivel4("A").isEmpty());
+    }
+
+    @Test
+    void consultarConexionesNivel4RedTransitiva() {
+        // Construimos una cadena: A->B->D, A->C->E, D->F, D->G
+        clientes.agregarCliente(new Cliente("A", 10));
+        clientes.agregarCliente(new Cliente("B", 20));
+        clientes.agregarCliente(new Cliente("C", 30));
+        clientes.agregarCliente(new Cliente("D", 40));
+        clientes.agregarCliente(new Cliente("E", 50));
+        clientes.agregarCliente(new Cliente("F", 60));
+        clientes.agregarCliente(new Cliente("G", 70));
+
+        clientes.agregarSeguido("A", "B");
+        clientes.agregarSeguido("A", "C");
+        clientes.agregarSeguido("B", "D");
+        clientes.agregarSeguido("C", "E");
+        clientes.agregarSeguido("D", "F");
+        clientes.agregarSeguido("D", "G");
+
+        // ABB con scorings: 20, 30, 40, 50, 60, 70
+        // El arbol y su nivel 4 dependerá del orden de inserción BFS
+        List<Integer> nivel4 = clientes.consultarConexionesNivel4("A");
+        assertNotNull(nivel4);
+    }
 }

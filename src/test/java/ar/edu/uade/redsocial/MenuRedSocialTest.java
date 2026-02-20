@@ -16,6 +16,22 @@ import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests adaptados a la estructura de dos menús:
+ *
+ * MENÚ SIN SESIÓN (opciones 1-8, salir=0):
+ *   1- Iniciar Sesion  |  2- Buscar por nombre  |  3- Buscar por Scoring
+ *   4- Registrarse  |  5- Ver solicitudes pendientes
+ *   6- Ultimas 10 acciones  |  7- Ver todos los clientes
+ *   8- Consultar red de conexiones (ABB)  |  0- SALIR
+ *
+ * MENÚ CON SESIÓN (opciones 1-12, salir=0):
+ *   1- Buscar por nombre  |  2- Buscar por Scoring  |  3- Seguir cliente
+ *   4- Aceptar solicitud  |  5- Rechazar solicitud  |  6- Deshacer
+ *   7- Mis solicitudes pendientes  |  8- Ultimas 10 acciones
+ *   9- Ver todos los clientes  |  10- Ver mis datos
+ *   11- Consultar red de conexiones (ABB)  |  12- Cerrar Sesion  |  0- SALIR
+ */
 class MenuRedSocialTest {
 
     private GestorClientes gestor;
@@ -27,49 +43,50 @@ class MenuRedSocialTest {
         gestor = new GestorClientes();
         historial = new HistorialAcciones();
         cola = new ColaSolicitudesSeguimiento();
-        // Cargamos datos de prueba directamente
         gestor.agregarCliente(new Cliente("Alice", 95));
         gestor.agregarCliente(new Cliente("Bob", 88));
         gestor.agregarCliente(new Cliente("Charlie", 72));
     }
 
-    private MenuRedSocial crearMenuRedSocial(String input) {
-        Scanner scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        return new MenuRedSocial(scanner, gestor, historial, cola);
-    }
-
-    /** Ejecuta el menu con el input dado usando crearMenu().ejecutar(scanner)
-     *  para evitar llamar a GuardadorClientesJson.guardar() que requiere filesystem. */
-    private void ejecutarMenu(String input) {
+    /** Ejecuta el menú SIN sesión con el input dado. */
+    private void ejecutarMenuSinLogin(String input) {
         Scanner scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
         MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestor, historial, cola);
-        Menu menu = menuRedSocial.crearMenu();
+        Menu menu = menuRedSocial.crearMenuSinLogin();
         menu.ejecutar(scanner);
         scanner.close();
     }
 
-    // --- Opcion 1: Buscar por nombre ---
+    /** Ejecuta el menú CON sesión activa como el usuario indicado. */
+    private void ejecutarMenuConLogin(String input, String nombreUsuario) {
+        Scanner scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
+        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestor, historial, cola);
+        menuRedSocial.setUsuarioLogueado(gestor.buscarPorNombre(nombreUsuario));
+        Menu menu = menuRedSocial.crearMenuConLogin();
+        menu.ejecutar(scanner);
+        scanner.close();
+    }
+
+    // ─── Sin sesión: Opcion 2 - Buscar por nombre ───
 
     @Test
     void buscarClientePorNombreExistente() {
-        // 1 = buscar por nombre, "Alice" = nombre, \n = enter continuar, 0 = salir
-        ejecutarMenu("1\nAlice\n\n0\n");
+        ejecutarMenuSinLogin("2\nAlice\n\n0\n");
         assertTrue(historial.hayAcciones());
         assertEquals("Buscar por nombre", historial.deshacerUltimaAccion().getTipo());
     }
 
     @Test
     void buscarClientePorNombreNoExistente() {
-        ejecutarMenu("1\nNoExiste\n\n0\n");
+        ejecutarMenuSinLogin("2\nNoExiste\n\n0\n");
         assertFalse(historial.hayAcciones());
     }
 
-    // --- Opcion 2: Buscar por scoring ---
+    // ─── Sin sesión: Opcion 3 - Buscar por scoring ───
 
     @Test
     void buscarClientePorScoringExistente() {
-        // 2 = buscar por scoring, 95 = scoring, \n = enter, 0 = salir
-        ejecutarMenu("2\n95\n\n0\n");
+        ejecutarMenuSinLogin("3\n95\n\n0\n");
         assertTrue(historial.hayAcciones());
         Accion a = historial.deshacerUltimaAccion();
         assertEquals("Buscar por scoring", a.getTipo());
@@ -78,23 +95,21 @@ class MenuRedSocialTest {
 
     @Test
     void buscarClientePorScoringNoExistente() {
-        ejecutarMenu("2\n999\n\n0\n");
+        ejecutarMenuSinLogin("3\n999\n\n0\n");
         assertFalse(historial.hayAcciones());
     }
 
     @Test
     void buscarClientePorScoringEntradaInvalida() {
-        // "abc" falla, luego 88 funciona
-        ejecutarMenu("2\nabc\n88\n\n0\n");
+        ejecutarMenuSinLogin("3\nabc\n88\n\n0\n");
         assertTrue(historial.hayAcciones());
     }
 
-    // --- Opcion 3: Agregar cliente ---
+    // ─── Sin sesión: Opcion 4 - Registrarse ───
 
     @Test
     void agregarClienteNuevo() {
-        // 3 = agregar, "Diana" = nombre, 60 = scoring, \n = enter, 0 = salir
-        ejecutarMenu("3\nDiana\n60\n\n0\n");
+        ejecutarMenuSinLogin("4\nDiana\n60\n\n0\n");
         assertNotNull(gestor.buscarPorNombre("Diana"));
         assertEquals(60, gestor.buscarPorNombre("Diana").getScoring());
         assertTrue(historial.hayAcciones());
@@ -102,166 +117,158 @@ class MenuRedSocialTest {
 
     @Test
     void agregarClienteDuplicado() {
-        // Intentar agregar "Alice" que ya existe
-        ejecutarMenu("3\nAlice\n\n0\n");
-        assertEquals(3, gestor.cantidadClientes()); // no se agrego otro
+        ejecutarMenuSinLogin("4\nAlice\n\n0\n");
+        assertEquals(3, gestor.cantidadClientes());
     }
 
     @Test
     void agregarClienteNombreVacioReintenta() {
-        // Primer intento vacio, segundo "Eva" valido
-        ejecutarMenu("3\n\nEva\n75\n\n0\n");
+        ejecutarMenuSinLogin("4\n\nEva\n75\n\n0\n");
         assertNotNull(gestor.buscarPorNombre("Eva"));
     }
 
-    // --- Opcion 4: Seguir cliente ---
+    // ─── Con sesión: Opcion 3 - Seguir cliente ───
 
     @Test
     void seguirClienteExitoso() {
-        // 4 = seguir, "Alice" = seguidor, "Bob" = seguido, \n = enter, 0 = salir
-        ejecutarMenu("4\nAlice\nBob\n\n0\n");
+        ejecutarMenuConLogin("3\nBob\n\n0\n", "Alice");
         assertTrue(cola.haySolicitudes());
         assertTrue(historial.hayAcciones());
         assertEquals("Seguir cliente", historial.deshacerUltimaAccion().getTipo());
     }
 
     @Test
-    void seguirClienteSeguidorNoExiste() {
-        ejecutarMenu("4\nNoExiste\nBob\n\n0\n");
-        assertFalse(cola.haySolicitudes());
-    }
-
-    @Test
     void seguirClienteSeguidoNoExiste() {
-        ejecutarMenu("4\nAlice\nNoExiste\n\n0\n");
+        ejecutarMenuConLogin("3\nNoExiste\n\n0\n", "Alice");
         assertFalse(cola.haySolicitudes());
     }
 
-    // --- Opcion 5: Deshacer accion ---
+    // ─── Con sesión: Opcion 6 - Deshacer accion ───
 
     @Test
     void deshacerSinAcciones() {
-        ejecutarMenu("5\n\n0\n");
+        ejecutarMenuConLogin("6\n\n0\n", "Alice");
         assertFalse(historial.hayAcciones());
     }
 
     @Test
     void deshacerAccionBuscar() {
-        // Primero buscar (1), luego deshacer (5)
-        ejecutarMenu("1\nAlice\n\n5\n\n0\n");
+        ejecutarMenuConLogin("1\nAlice\n\n6\n\n0\n", "Alice");
         assertFalse(historial.hayAcciones());
     }
 
     @Test
     void deshacerAccionAgregarCliente() {
-        // Agregar Diana (3), luego deshacer (5) -> debe eliminar Diana
-        ejecutarMenu("3\nDiana\n60\n\n5\n\n0\n");
+        ejecutarMenuSinLogin("4\nDiana\n60\n\n0\n");
+        ejecutarMenuConLogin("6\n\n0\n", "Alice");
         assertNull(gestor.buscarPorNombre("Diana"));
         assertEquals(3, gestor.cantidadClientes());
     }
 
     @Test
     void deshacerAccionSeguirCliente() {
-        // Seguir (4), luego deshacer (5) -> debe quitar solicitud de la cola
-        ejecutarMenu("4\nAlice\nBob\n\n5\n\n0\n");
+        ejecutarMenuConLogin("3\nBob\n\n6\n\n0\n", "Alice");
         assertFalse(cola.haySolicitudes());
     }
 
     @Test
-    void deshacerAccionProcesarSolicitud() {
-        // Agregar solicitud a la cola, procesarla (6), luego deshacer (5)
+    void deshacerAccionAceptarSolicitud() {
         cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
-        ejecutarMenu("6\n\n5\n\n0\n");
-        // Deshacer "Procesar solicitud" quita el seguido
+        ejecutarMenuConLogin("4\n1\n\n6\n\n0\n", "Bob");
         assertFalse(gestor.buscarPorNombre("Alice").getSiguiendo().contains("Bob"));
     }
 
-    // --- Opcion 6: Procesar solicitudes ---
+    // ─── Con sesión: Opcion 4 - Aceptar solicitud ───
 
     @Test
-    void procesarSolicitudExitosa() {
+    void aceptarSolicitudExitosa() {
         cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
-        ejecutarMenu("6\n\n0\n");
+        ejecutarMenuConLogin("4\n1\n\n0\n", "Bob");
         assertTrue(gestor.buscarPorNombre("Alice").getSiguiendo().contains("Bob"));
         assertTrue(historial.hayAcciones());
     }
 
     @Test
-    void procesarSolicitudSinPendientes() {
-        ejecutarMenu("6\n\n0\n");
+    void aceptarSolicitudSinPendientes() {
+        ejecutarMenuConLogin("4\n\n0\n", "Alice");
         assertFalse(historial.hayAcciones());
     }
 
     @Test
-    void procesarSolicitudNoAplicable() {
-        // Solicitud donde el seguido no existe
-        cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "NoExiste"));
-        ejecutarMenu("6\n\n0\n");
-        assertTrue(historial.hayAcciones()); // se registra igualmente
+    void aceptarSolicitudNoAplicable() {
+        cola.agregarSolicitud(new SolicitudSeguimiento("NoExiste", "Alice"));
+        ejecutarMenuConLogin("4\n1\n\n0\n", "Alice");
+        assertTrue(historial.hayAcciones());
     }
 
-    // --- Opcion 7: Listar solicitudes pendientes ---
+    // ─── Con sesión: Opcion 5 - Rechazar solicitud ───
+
+    @Test
+    void rechazarSolicitudExitosa() {
+        cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
+        ejecutarMenuConLogin("5\n1\n\n0\n", "Bob");
+        assertFalse(cola.haySolicitudes());
+        assertFalse(gestor.buscarPorNombre("Alice").getSiguiendo().contains("Bob"));
+    }
+
+    // ─── Sin sesión: Opcion 5 - Listar solicitudes pendientes ───
 
     @Test
     void listarSolicitudesPendientesVacia() {
-        ejecutarMenu("7\n\n0\n");
-        // Solo verificamos que no rompa
+        ejecutarMenuSinLogin("5\n\n0\n");
     }
 
     @Test
     void listarSolicitudesPendientesConDatos() {
         cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
         cola.agregarSolicitud(new SolicitudSeguimiento("Bob", "Charlie"));
-        ejecutarMenu("7\n\n0\n");
-        // Verificamos que la cola no fue modificada
+        ejecutarMenuSinLogin("5\n\n0\n");
         assertTrue(cola.haySolicitudes());
         assertEquals(2, cola.listarPendientes().size());
     }
 
-    // --- Opcion 8: Listar ultimas acciones ---
+    // ─── Sin sesión: Opcion 6 - Listar ultimas acciones ───
 
     @Test
     void listarUltimasAccionesVacia() {
-        ejecutarMenu("8\n\n0\n");
-        // Solo verificamos que no rompa
+        ejecutarMenuSinLogin("6\n\n0\n");
     }
 
     @Test
     void listarUltimasAccionesConDatos() {
         historial.registrarAccion(new Accion("test1", "detalle1"));
         historial.registrarAccion(new Accion("test2", "detalle2"));
-        ejecutarMenu("8\n\n0\n");
-        // Las acciones no se modifican al listar
+        ejecutarMenuSinLogin("6\n\n0\n");
         assertTrue(historial.hayAcciones());
     }
 
-    // --- Opcion 9: Listar todos los clientes ---
+    // ─── Sin sesión: Opcion 7 - Listar todos los clientes ───
 
     @Test
     void listarTodosLosClientes() {
-        ejecutarMenu("9\n\n0\n");
+        ejecutarMenuSinLogin("7\n\n0\n");
         assertTrue(historial.hayAcciones());
         assertEquals("Listar clientes", historial.deshacerUltimaAccion().getTipo());
     }
 
     @Test
     void listarTodosLosClientesVacio() {
-        gestor = new GestorClientes(); // vacio
-        ejecutarMenu("9\n\n0\n");
+        gestor = new GestorClientes();
+        ejecutarMenuSinLogin("7\n\n0\n");
     }
 
-    // --- crearMenu ---
+    // ─── crearMenuSinLogin devuelve Menu ───
 
     @Test
     void crearMenuDevuelveMenu() {
         Scanner sc = new Scanner(new ByteArrayInputStream("0\n".getBytes()));
         MenuRedSocial menuRedSocial = new MenuRedSocial(sc, gestor, historial, cola);
-        Menu menu = menuRedSocial.crearMenu();
+        Menu menu = menuRedSocial.crearMenuSinLogin();
         assertNotNull(menu);
         sc.close();
     }
 
-    // --- cargarDatosIniciales ---
+    // ─── cargarDatosIniciales ───
 
     @Test
     void cargarDatosIniciales() {
@@ -273,13 +280,14 @@ class MenuRedSocialTest {
         sc.close();
     }
 
-    // --- Flujo completo: multiples acciones ---
+    // ─── Flujo completo ───
 
     @Test
     void flujoCompletoVariasAcciones() {
-        // Agregar "Diana", seguir Alice->Bob, procesar solicitud, listar clientes, salir
-        String input = "3\nDiana\n60\n\n4\nAlice\nBob\n\n6\n\n9\n\n0\n";
-        ejecutarMenu(input);
+        ejecutarMenuSinLogin("4\nDiana\n60\n\n0\n");
+        ejecutarMenuConLogin("3\nBob\n\n0\n", "Alice");
+        ejecutarMenuConLogin("4\n1\n\n9\n\n0\n", "Bob");
+
         assertNotNull(gestor.buscarPorNombre("Diana"));
         assertTrue(gestor.buscarPorNombre("Alice").getSiguiendo().contains("Bob"));
         assertEquals(4, gestor.cantidadClientes());
@@ -287,6 +295,6 @@ class MenuRedSocialTest {
 
     @Test
     void opcionInvalidaNoRompeMenu() {
-        ejecutarMenu("99\n\n0\n");
+        ejecutarMenuSinLogin("99\n\n0\n");
     }
 }

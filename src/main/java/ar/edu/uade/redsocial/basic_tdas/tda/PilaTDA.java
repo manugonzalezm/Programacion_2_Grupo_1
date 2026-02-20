@@ -1,19 +1,14 @@
 package ar.edu.uade.redsocial.basic_tdas.tda;
 
-public interface PilaTDA {
+public interface PilaTDA<T> {
 
-    // siempre que la pila esté inicializada
     void InicializarPila();
 
-    // siempre que la pila esté inicializada
-    void Apilar(int x);
+    void Apilar(T x);
 
-    // siempre que la pila no esté vacía
     void Desapilar();
 
-    // siempre que la pila esté inicializada
     boolean PilaVacia();
 
-    // siempre que la pila no esté vacía
-    int Tope();
+    T Tope();
 }

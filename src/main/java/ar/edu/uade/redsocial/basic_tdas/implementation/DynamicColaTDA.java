@@ -3,31 +3,26 @@ package ar.edu.uade.redsocial.basic_tdas.implementation;
 import ar.edu.uade.redsocial.basic_tdas.entities.Nodo;
 import ar.edu.uade.redsocial.basic_tdas.tda.ColaTDA;
 
-public class DynamicColaTDA implements ColaTDA {
+public class DynamicColaTDA<T> implements ColaTDA<T> {
 
-    // Primer elemento en la cola
-    Nodo primero;
-
-    // Último elemento en la cola, es decir, el último agregado
-    Nodo ultimo;
+    Nodo<T> primero;
+    Nodo<T> ultimo;
 
     public void InicializarCola() {
         primero = null;
         ultimo = null;
     }
 
-    public void Acolar(int x) {
-        Nodo aux = new Nodo();
+    public void Acolar(T x) {
+        Nodo<T> aux = new Nodo<>();
         aux.info = x;
         aux.sig = null;
 
-        // Si la cola no está vacía
         if (ultimo != null)
             ultimo.sig = aux;
 
         ultimo = aux;
 
-        // Si la cola estaba vacía
         if (primero == null)
             primero = ultimo;
     }
@@ -35,7 +30,6 @@ public class DynamicColaTDA implements ColaTDA {
     public void Desacolar() {
         primero = primero.sig;
 
-        // Si la cola queda vacía
         if (primero == null)
             ultimo = null;
     }
@@ -44,8 +38,7 @@ public class DynamicColaTDA implements ColaTDA {
         return (ultimo == null);
     }
 
-    public int Primero() {
+    public T Primero() {
         return primero.info;
     }
 }
-

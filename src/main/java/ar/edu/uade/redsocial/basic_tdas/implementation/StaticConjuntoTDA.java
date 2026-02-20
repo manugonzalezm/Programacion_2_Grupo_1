@@ -2,18 +2,17 @@ package ar.edu.uade.redsocial.basic_tdas.implementation;
 
 import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 
-public class StaticConjuntoTDA implements ConjuntoTDA {
+public class StaticConjuntoTDA<T> implements ConjuntoTDA<T> {
 
-    int[] a;
+    Object[] a;
     int cant;
 
     public void InicializarConjunto() { // complejidad O(1)
-        a = new int[100];
+        a = new Object[100];
         cant = 0;
     }
 
-    public void Agregar(int x) { // complejidad O(n), n = cant (usa Pertenece)
-        // agrega x solo si no pertenece al conjunto
+    public void Agregar(T x) { // complejidad O(n)
         if (!this.Pertenece(x)) {
             a[cant] = x;
             cant++;
@@ -24,23 +23,22 @@ public class StaticConjuntoTDA implements ConjuntoTDA {
         return cant == 0;
     }
 
-    public int Elegir() { // complejidad O(1)
-        // devuelve un elemento del conjunto
-        return a[cant - 1];
+    @SuppressWarnings("unchecked")
+    public T Elegir() { // complejidad O(1)
+        return (T) a[cant - 1];
     }
 
-    public boolean Pertenece(int x) { // complejidad O(n), n = cant
+    public boolean Pertenece(T x) { // complejidad O(n)
         int i = 0;
-        while (i < cant && a[i] != x) {
+        while (i < cant && !a[i].equals(x)) {
             i++;
         }
         return (i < cant);
     }
 
-    public void Sacar(int x) { // complejidad O(n)
-        // elimina x si pertenece al conjunto
+    public void Sacar(T x) { // complejidad O(n)
         int i = 0;
-        while (i < cant && a[i] != x) {
+        while (i < cant && !a[i].equals(x)) {
             i++;
         }
         if (i < cant) {

@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StaticColaTDATest {
 
-    private ColaTDA cola;
+    private ColaTDA<Integer> cola;
 
     @BeforeEach
     void setUp() {
-        cola = new StaticColaTDA();
+        cola = new StaticColaTDA<>();
         cola.InicializarCola();
     }
 

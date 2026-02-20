@@ -39,4 +39,17 @@ public class ColaSolicitudesSeguimiento {
     public List<SolicitudSeguimiento> listarPendientes() { // complejidad O(n)
         return solicitudesTDA.listarPendientes();
     }
+
+    /**
+     * Desacola y devuelve la primera solicitud cuyo destino sea el usuario indicado,
+     * o null si no existe ninguna.
+     */
+    public SolicitudSeguimiento procesarSolicitudParaUsuario(String nombreUsuario) { // complejidad O(n)
+        return solicitudesTDA.procesarSolicitudParaUsuario(nombreUsuario);
+    }
+
+    /** Devuelve solicitudes pendientes donde el usuario es origen o destino, sin modificar la cola. */
+    public List<SolicitudSeguimiento> listarPendientesParaUsuario(String nombreUsuario) { // complejidad O(n)
+        return solicitudesTDA.listarPendientesParaUsuario(nombreUsuario);
+    }
 }

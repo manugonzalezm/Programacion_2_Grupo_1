@@ -3,9 +3,9 @@ package ar.edu.uade.redsocial.basic_tdas.implementation;
 import ar.edu.uade.redsocial.basic_tdas.entities.Nodo;
 import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 
-public class DynamicConjuntoTDA implements ConjuntoTDA {
+public class DynamicConjuntoTDA<T> implements ConjuntoTDA<T> {
 
-    Nodo c;
+    Nodo<T> c;
 
     public void InicializarConjunto() {
         c = null;
@@ -15,30 +15,27 @@ public class DynamicConjuntoTDA implements ConjuntoTDA {
         return (c == null);
     }
 
-    public void Agregar(int x) {
-        /* Verifica que x no este en el conjunto */
+    public void Agregar(T x) {
         if (!this.Pertenece(x)) {
-            Nodo aux = new Nodo();
+            Nodo<T> aux = new Nodo<>();
             aux.info = x;
             aux.sig = c;
             c = aux;
         }
     }
 
-    public int Elegir() {
+    public T Elegir() {
         return c.info;
     }
 
-    public void Sacar(int x) {
+    public void Sacar(T x) {
         if (c != null) {
-
-            // si es el primer elemento de la lista
-            if (c.info == x) {
+            if (c.info.equals(x)) {
                 c = c.sig;
             } else {
-                Nodo aux = c;
+                Nodo<T> aux = c;
 
-                while (aux.sig != null && aux.sig.info != x)
+                while (aux.sig != null && !aux.sig.info.equals(x))
                     aux = aux.sig;
 
                 if (aux.sig != null)
@@ -47,14 +44,13 @@ public class DynamicConjuntoTDA implements ConjuntoTDA {
         }
     }
 
-    public boolean Pertenece(int x) {
-        Nodo aux = c;
+    public boolean Pertenece(T x) {
+        Nodo<T> aux = c;
 
-        while ((aux != null) && (aux.info != x)) {
+        while ((aux != null) && (!aux.info.equals(x))) {
             aux = aux.sig;
         }
 
         return (aux != null);
     }
 }
-

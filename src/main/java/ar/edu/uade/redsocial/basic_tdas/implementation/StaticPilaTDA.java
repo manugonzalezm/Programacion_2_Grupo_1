@@ -2,18 +2,17 @@ package ar.edu.uade.redsocial.basic_tdas.implementation;
 
 import ar.edu.uade.redsocial.basic_tdas.tda.PilaTDA;
 
-public class StaticPilaTDA implements PilaTDA {
+public class StaticPilaTDA<T> implements PilaTDA<T> {
 
-    int[] a;     // arreglo en donde se guarda la información
-    int indice;  // variable entera en donde se guarda la cantidad
-    // de elementos que se tienen guardados
+    Object[] a;
+    int indice;
 
     public void InicializarPila() { // complejidad O(1)
-        a = new int[100];
+        a = new Object[100];
         indice = 0;
     }
 
-    public void Apilar(int x) { // complejidad O(1)
+    public void Apilar(T x) { // complejidad O(1)
         a[indice] = x;
         indice++;
     }
@@ -26,7 +25,8 @@ public class StaticPilaTDA implements PilaTDA {
         return (indice == 0);
     }
 
-    public int Tope() { // complejidad O(1)
-        return a[indice - 1];
+    @SuppressWarnings("unchecked")
+    public T Tope() { // complejidad O(1)
+        return (T) a[indice - 1];
     }
 }

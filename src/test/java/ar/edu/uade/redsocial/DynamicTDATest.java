@@ -16,14 +16,14 @@ class DynamicTDATest {
 
     @Test
     void pilaVaciaAlIniciar() {
-        PilaTDA pila = new DynamicPilaTDA();
+        PilaTDA<Integer> pila = new DynamicPilaTDA<>();
         pila.InicializarPila();
         assertTrue(pila.PilaVacia());
     }
 
     @Test
     void pilaApilarDesapilar() {
-        PilaTDA pila = new DynamicPilaTDA();
+        PilaTDA<Integer> pila = new DynamicPilaTDA<>();
         pila.InicializarPila();
         pila.Apilar(1);
         pila.Apilar(2);
@@ -38,14 +38,14 @@ class DynamicTDATest {
 
     @Test
     void colaVaciaAlIniciar() {
-        ColaTDA cola = new DynamicColaTDA();
+        ColaTDA<Integer> cola = new DynamicColaTDA<>();
         cola.InicializarCola();
         assertTrue(cola.ColaVacia());
     }
 
     @Test
     void colaAcolarDesacolar() {
-        ColaTDA cola = new DynamicColaTDA();
+        ColaTDA<Integer> cola = new DynamicColaTDA<>();
         cola.InicializarCola();
         cola.Acolar(10);
         cola.Acolar(20);
@@ -58,7 +58,7 @@ class DynamicTDATest {
 
     @Test
     void colaUnElemento() {
-        ColaTDA cola = new DynamicColaTDA();
+        ColaTDA<Integer> cola = new DynamicColaTDA<>();
         cola.InicializarCola();
         cola.Acolar(42);
         assertFalse(cola.ColaVacia());
@@ -71,14 +71,14 @@ class DynamicTDATest {
 
     @Test
     void conjuntoVacioAlIniciar() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         assertTrue(c.ConjuntoVacio());
     }
 
     @Test
     void conjuntoAgregarPertenece() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         c.Agregar(5);
         assertTrue(c.Pertenece(5));
@@ -87,18 +87,18 @@ class DynamicTDATest {
 
     @Test
     void conjuntoSacarPrimero() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         c.Agregar(1);
         c.Agregar(2);
-        c.Sacar(2); // 2 is the head (last added)
+        c.Sacar(2);
         assertFalse(c.Pertenece(2));
         assertTrue(c.Pertenece(1));
     }
 
     @Test
     void conjuntoSacarMedio() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         c.Agregar(1);
         c.Agregar(2);
@@ -111,7 +111,7 @@ class DynamicTDATest {
 
     @Test
     void conjuntoSacarNoExistente() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         c.Agregar(1);
         c.Sacar(999);
@@ -120,15 +120,15 @@ class DynamicTDATest {
 
     @Test
     void conjuntoSacarDeVacio() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
-        c.Sacar(1); // should not throw
+        c.Sacar(1);
         assertTrue(c.ConjuntoVacio());
     }
 
     @Test
     void conjuntoElegir() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         c.Agregar(77);
         assertEquals(77, c.Elegir());
@@ -136,7 +136,7 @@ class DynamicTDATest {
 
     @Test
     void conjuntoDuplicado() {
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+        ConjuntoTDA<Integer> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
         c.Agregar(5);
         c.Agregar(5);

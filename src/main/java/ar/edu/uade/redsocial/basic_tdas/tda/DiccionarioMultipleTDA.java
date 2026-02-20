@@ -1,23 +1,16 @@
 package ar.edu.uade.redsocial.basic_tdas.tda;
 
-public interface DiccionarioMultipleTDA {
+public interface DiccionarioMultipleTDA<K, V> {
 
-    // siempre que el diccionario esté inicializado
     void InicializarDiccionario();
 
-    // siempre que el diccionario esté inicializado
-    void Agregar(int clave, int valor);
+    void Agregar(K clave, V valor);
 
-    // siempre que el diccionario esté inicializado
-    void Eliminar(int clave);
+    void Eliminar(K clave);
 
-    // siempre que el diccionario esté inicializado
-    void EliminarValor(int clave, int valor);
+    void EliminarValor(K clave, V valor);
 
-    // siempre que el diccionario esté inicializado
-    ConjuntoTDA Recuperar(int clave);
+    ConjuntoTDA<V> Recuperar(K clave);
 
-    // siempre que el diccionario esté inicializado
-    ConjuntoTDA Claves();
+    ConjuntoTDA<K> Claves();
 }
-

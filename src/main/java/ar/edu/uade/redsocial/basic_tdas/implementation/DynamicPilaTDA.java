@@ -3,16 +3,16 @@ package ar.edu.uade.redsocial.basic_tdas.implementation;
 import ar.edu.uade.redsocial.basic_tdas.entities.Nodo;
 import ar.edu.uade.redsocial.basic_tdas.tda.PilaTDA;
 
-public class DynamicPilaTDA implements PilaTDA {
+public class DynamicPilaTDA<T> implements PilaTDA<T> {
 
-    Nodo primero;
+    Nodo<T> primero;
 
     public void InicializarPila() {
         primero = null;
     }
 
-    public void Apilar(int x) {
-        Nodo aux = new Nodo();
+    public void Apilar(T x) {
+        Nodo<T> aux = new Nodo<>();
         aux.info = x;
         aux.sig = primero;
         primero = aux;
@@ -26,8 +26,7 @@ public class DynamicPilaTDA implements PilaTDA {
         return (primero == null);
     }
 
-    public int Tope() {
+    public T Tope() {
         return primero.info;
     }
 }
-

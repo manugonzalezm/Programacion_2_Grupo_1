@@ -1,22 +1,16 @@
 package ar.edu.uade.redsocial.basic_tdas.tda;
 
-public interface ConjuntoTDA {
+public interface ConjuntoTDA<T> {
 
     void InicializarConjunto();
 
-    // siempre que el conjunto esté inicializado
     boolean ConjuntoVacio();
 
-    // siempre que el conjunto esté inicializado
-    void Agregar(int x);
+    void Agregar(T x);
 
-    // siempre que el conjunto esté inicializado y no esté vacío
-    int Elegir();
+    T Elegir();
 
-    // siempre que el conjunto esté inicializado
-    void Sacar(int x);
+    void Sacar(T x);
 
-    // siempre que el conjunto esté inicializado
-    boolean Pertenece(int x);
+    boolean Pertenece(T x);
 }
-

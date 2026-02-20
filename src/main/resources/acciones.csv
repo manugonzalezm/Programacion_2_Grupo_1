@@ -23,3 +23,13 @@ Logout,Chen,2026-02-17 23:54:33
 Listar clientes,total=11,2026-02-17 23:54:19
 Buscar por nombre,Flor,2026-02-17 23:53:34
 Login,Chen,2026-02-17 23:53:09
+Seguir cliente,Manuel -> Chen,2026-02-18 21:00:54
+Listar clientes,total=11,2026-02-18 21:00:46
+Login,Manuel,2026-02-18 21:00:35
+Login,Manuel,2026-02-18 21:00:24
+Procesar solicitud,new_user -> Chen,2026-02-19 19:56:53
+Login,Chen,2026-02-19 19:56:39
+Logout,new_user,2026-02-19 19:56:35
+Seguir cliente,new_user -> Chen,2026-02-19 19:56:31
+Login,new_user,2026-02-19 19:55:08
+Registrarse,new_user,2026-02-19 19:54:45

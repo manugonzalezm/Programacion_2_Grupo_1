@@ -10,17 +10,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StaticDiccionarioSimpleTDATest {
 
-    private DiccionarioSimpleTDA dic;
+    private DiccionarioSimpleTDA<Integer, Integer> dic;
 
     @BeforeEach
     void setUp() {
-        dic = new StaticDiccionarioSimpleTDA();
+        dic = new StaticDiccionarioSimpleTDA<>();
         dic.InicializarDiccionario();
     }
 
     @Test
     void clavesVacioAlIniciar() {
-        ConjuntoTDA claves = dic.Claves();
+        ConjuntoTDA<Integer> claves = dic.Claves();
         assertTrue(claves.ConjuntoVacio());
     }
 
@@ -42,7 +42,7 @@ class StaticDiccionarioSimpleTDATest {
         dic.Agregar(1, 100);
         dic.Agregar(2, 200);
         dic.Eliminar(1);
-        ConjuntoTDA claves = dic.Claves();
+        ConjuntoTDA<Integer> claves = dic.Claves();
         assertFalse(claves.ConjuntoVacio());
         assertEquals(2, claves.Elegir());
     }
@@ -68,7 +68,7 @@ class StaticDiccionarioSimpleTDATest {
     void clavesDevuelveTodasLasClaves() {
         dic.Agregar(5, 50);
         dic.Agregar(10, 100);
-        ConjuntoTDA claves = dic.Claves();
+        ConjuntoTDA<Integer> claves = dic.Claves();
         int count = 0;
         while (!claves.ConjuntoVacio()) {
             int k = claves.Elegir();

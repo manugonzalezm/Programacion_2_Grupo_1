@@ -52,5 +52,10 @@ public interface ClientesTDA {
      */
     boolean quitarSeguido(String nombreCliente, String nombreSeguido); // complejidad O(s)
 
-    
+    /**
+     * Construye un ABB con los scorings de toda la red de conexiones transitiva
+     * del cliente indicado (BFS por "siguiendo") y retorna los scorings en el nivel 4.
+     * Retorna lista vacía si el cliente no existe o no hay nodos en nivel 4.
+     */
+    List<Integer> consultarConexionesNivel4(String nombre); // complejidad O(v + e + v log v)
 }

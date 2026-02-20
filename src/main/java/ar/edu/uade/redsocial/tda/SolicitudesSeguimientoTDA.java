@@ -23,4 +23,16 @@ public interface SolicitudesSeguimientoTDA {
 
     /** Devuelve una lista con todas las solicitudes pendientes sin modificar la cola. */
     java.util.List<SolicitudSeguimiento> listarPendientes(); // complejidad O(n)
+
+    /**
+     * Desacola y devuelve la primera solicitud cuyo destino sea el usuario indicado,
+     * o null si no existe ninguna. Preserva el orden del resto de la cola.
+     */
+    SolicitudSeguimiento procesarSolicitudParaUsuario(String nombreUsuario); // complejidad O(n)
+
+    /**
+     * Devuelve las solicitudes pendientes donde el usuario es origen o destino,
+     * sin modificar la cola.
+     */
+    java.util.List<SolicitudSeguimiento> listarPendientesParaUsuario(String nombreUsuario); // complejidad O(n)
 }

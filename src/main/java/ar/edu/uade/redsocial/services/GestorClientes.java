@@ -59,4 +59,12 @@ public class GestorClientes {
     public List<Cliente> listarClientes() { // complejidad O(n)
         return clientesTDA.listarClientes();
     }
+
+    /**
+     * Recorre la red transitiva de "siguiendo" del cliente, construye un ABB
+     * con los scorings alcanzables y retorna los que caen en el nivel 4 del árbol.
+     */
+    public List<Integer> consultarConexionesNivel4(String nombre) { // complejidad O(v + e + v log v)
+        return clientesTDA.consultarConexionesNivel4(nombre);
+    }
 }

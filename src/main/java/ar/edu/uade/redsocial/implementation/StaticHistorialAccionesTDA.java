@@ -9,34 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementación del historial de acciones usando PilaTDA como estructura interna (LIFO).
- * - registrarAccion / deshacerUltimaAccion / hayAcciones: O(1).
- * - listarUltimas: O(n), desapila y re-apila para recorrer.
- * Capacidad máxima: 1000 acciones.
+ * Implementación del historial de acciones usando PilaTDA genérico (LIFO).
+ * Gracias a los genéricos, almacena Accion directamente sin mapeo de índices.
  */
 public class StaticHistorialAccionesTDA implements HistorialAccionesTDA {
 
-    private static final int CAPACIDAD = 1000;
-
-    private PilaTDA pila;
-    private Accion[] registro;
-    private int nextIndex;
+    private PilaTDA<Accion> pila;
 
     public StaticHistorialAccionesTDA() {
-        pila = new DynamicPilaTDA();
+        pila = new DynamicPilaTDA<>();
         pila.InicializarPila();
-        registro = new Accion[CAPACIDAD];
-        nextIndex = 0;
     }
 
     @Override
     public void registrarAccion(Accion accion) { // complejidad O(1)
-        if (nextIndex >= CAPACIDAD) {
-            throw new IllegalStateException("Historial de acciones lleno");
-        }
-        registro[nextIndex] = accion;
-        pila.Apilar(nextIndex);
-        nextIndex++;
+        pila.Apilar(accion);
     }
 
     @Override
@@ -44,9 +31,9 @@ public class StaticHistorialAccionesTDA implements HistorialAccionesTDA {
         if (pila.PilaVacia()) {
             return null;
         }
-        int idx = pila.Tope();
+        Accion accion = pila.Tope();
         pila.Desapilar();
-        return registro[idx];
+        return accion;
     }
 
     @Override
@@ -55,21 +42,20 @@ public class StaticHistorialAccionesTDA implements HistorialAccionesTDA {
     }
 
     @Override
-    public List<Accion> listarUltimas(int n) { // complejidad O(n), desapila y re-apila
+    public List<Accion> listarUltimas(int n) { // complejidad O(n)
         List<Accion> resultado = new ArrayList<>();
-        PilaTDA temp = new DynamicPilaTDA();
+        PilaTDA<Accion> temp = new DynamicPilaTDA<>();
         temp.InicializarPila();
 
         int count = 0;
         while (!pila.PilaVacia() && count < n) {
-            int idx = pila.Tope();
+            Accion accion = pila.Tope();
             pila.Desapilar();
-            resultado.add(registro[idx]);
-            temp.Apilar(idx);
+            resultado.add(accion);
+            temp.Apilar(accion);
             count++;
         }
 
-        // Restaurar la pila original
         while (!temp.PilaVacia()) {
             pila.Apilar(temp.Tope());
             temp.Desapilar();

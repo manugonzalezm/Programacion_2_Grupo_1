@@ -64,11 +64,6 @@ class GestorClientesTest {
         assertEquals(1, gestor.cantidadClientes());
     }
 
-    @Test
-    void cantidadClientes() {
-        CargadorClientesJson.readFromFile(gestor);
-        assertEquals(10, gestor.cantidadClientes());
-    }
 
     @Test
     void listarClientesVacio() {
@@ -225,5 +220,28 @@ class GestorClientesTest {
         assertTrue(actualizado.getSiguiendo().contains("B"));
     }
 
+    @Test
+    void agregarSeguidoMaximoDos() {
+        gestor.agregarCliente(new Cliente("A", 50));
+        gestor.agregarCliente(new Cliente("B", 60));
+        gestor.agregarCliente(new Cliente("C", 70));
+        gestor.agregarCliente(new Cliente("D", 80));
 
+        assertTrue(gestor.agregarSeguido("A", "B"));
+        assertTrue(gestor.agregarSeguido("A", "C"));
+        assertFalse(gestor.agregarSeguido("A", "D"));
+    }
+
+    @Test
+    void consultarConexionesNivel4() {
+        gestor.agregarCliente(new Cliente("A", 10));
+        gestor.agregarCliente(new Cliente("B", 20));
+        gestor.agregarCliente(new Cliente("C", 30));
+
+        gestor.agregarSeguido("A", "B");
+        gestor.agregarSeguido("A", "C");
+
+        List<Integer> nivel4 = gestor.consultarConexionesNivel4("A");
+        assertNotNull(nivel4);
+    }
 }

@@ -3,113 +3,109 @@ package ar.edu.uade.redsocial.basic_tdas.implementation;
 import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 import ar.edu.uade.redsocial.basic_tdas.tda.DiccionarioMultipleTDA;
 
-public class StaticDiccionarioMultipleTDA implements DiccionarioMultipleTDA {
+public class StaticDiccionarioMultipleTDA<K, V> implements DiccionarioMultipleTDA<K, V> {
 
-    class Elemento {
-        int clave;
-        int[] valores;
-        int cantValores;
-    }
-
-    Elemento[] elementos;
+    Object[] claves;
+    Object[][] valores;
+    int[] cantValores;
     int cantClaves;
 
     public void InicializarDiccionario() { // complejidad O(1)
-        elementos = new Elemento[100];
+        claves = new Object[100];
+        valores = new Object[100][100];
+        cantValores = new int[100];
         cantClaves = 0;
     }
 
-    public void Agregar(int clave, int valor) { // complejidad O(n+m), n = cantClaves, m = valores de la clave
+    public void Agregar(K clave, V valor) { // complejidad O(n+m)
         int posC = Clave2Indice(clave);
 
         if (posC == -1) {
             posC = cantClaves;
-            elementos[posC] = new Elemento();
-            elementos[posC].clave = clave;
-            elementos[posC].cantValores = 0;
-            elementos[posC].valores = new int[100];
+            claves[posC] = clave;
+            cantValores[posC] = 0;
             cantClaves++;
         }
 
-        Elemento e = elementos[posC];
-        int posV = Valor2Indice(e, valor);
+        int posV = Valor2Indice(posC, valor);
 
         if (posV == -1) {
-            e.valores[e.cantValores] = valor;
-            e.cantValores++;
+            valores[posC][cantValores[posC]] = valor;
+            cantValores[posC]++;
         }
     }
 
-    private int Clave2Indice(int clave) { // complejidad O(n), n = cantClaves
+    private int Clave2Indice(K clave) { // complejidad O(n)
         int i = cantClaves - 1;
 
-        while (i >= 0 && elementos[i].clave != clave) {
+        while (i >= 0 && !claves[i].equals(clave)) {
             i--;
         }
 
         return i;
     }
 
-    public void Eliminar(int clave) { // complejidad O(n)
+    public void Eliminar(K clave) { // complejidad O(n)
         int pos = Clave2Indice(clave);
 
         if (pos != -1) {
-            elementos[pos] = elementos[cantClaves - 1];
+            claves[pos] = claves[cantClaves - 1];
+            valores[pos] = valores[cantClaves - 1];
+            cantValores[pos] = cantValores[cantClaves - 1];
             cantClaves--;
         }
     }
 
-    public void EliminarValor(int clave, int valor) { // complejidad O(n+m)
+    public void EliminarValor(K clave, V valor) { // complejidad O(n+m)
         int posC = Clave2Indice(clave);
 
         if (posC != -1) {
-            Elemento e = elementos[posC];
-            int posV = Valor2Indice(e, valor);
+            int posV = Valor2Indice(posC, valor);
 
             if (posV != -1) {
-                e.valores[posV] = e.valores[e.cantValores - 1];
-                e.cantValores--;
+                valores[posC][posV] = valores[posC][cantValores[posC] - 1];
+                cantValores[posC]--;
 
-                if (e.cantValores == 0) {
+                if (cantValores[posC] == 0) {
                     Eliminar(clave);
                 }
             }
         }
     }
 
-    private int Valor2Indice(Elemento e, int valor) { // complejidad O(m), m = cantValores
-        int i = e.cantValores - 1;
+    private int Valor2Indice(int posC, V valor) { // complejidad O(m)
+        int i = cantValores[posC] - 1;
 
-        while (i >= 0 && e.valores[i] != valor) {
+        while (i >= 0 && !valores[posC][i].equals(valor)) {
             i--;
         }
 
         return i;
     }
 
-    public ConjuntoTDA Recuperar(int clave) { // complejidad O(n+m)
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+    @SuppressWarnings("unchecked")
+    public ConjuntoTDA<V> Recuperar(K clave) { // complejidad O(n+m)
+        ConjuntoTDA<V> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
 
         int pos = Clave2Indice(clave);
 
         if (pos != -1) {
-            Elemento e = elementos[pos];
-
-            for (int i = 0; i < e.cantValores; i++) {
-                c.Agregar(e.valores[i]);
+            for (int i = 0; i < cantValores[pos]; i++) {
+                c.Agregar((V) valores[pos][i]);
             }
         }
 
         return c;
     }
 
-    public ConjuntoTDA Claves() { // complejidad O(n), n = cantClaves
-        ConjuntoTDA c = new DynamicConjuntoTDA();
+    @SuppressWarnings("unchecked")
+    public ConjuntoTDA<K> Claves() { // complejidad O(n)
+        ConjuntoTDA<K> c = new DynamicConjuntoTDA<>();
         c.InicializarConjunto();
 
         for (int i = 0; i < cantClaves; i++) {
-            c.Agregar(elementos[i].clave);
+            c.Agregar((K) claves[i]);
         }
 
         return c;

@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StaticConjuntoTDATest {
 
-    private ConjuntoTDA conjunto;
+    private ConjuntoTDA<Integer> conjunto;
 
     @BeforeEach
     void setUp() {
-        conjunto = new StaticConjuntoTDA();
+        conjunto = new StaticConjuntoTDA<>();
         conjunto.InicializarConjunto();
     }
 

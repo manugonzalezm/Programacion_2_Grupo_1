@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StaticPilaTDATest {
 
-    private PilaTDA pila;
+    private PilaTDA<Integer> pila;
 
     @BeforeEach
     void setUp() {
-        pila = new StaticPilaTDA();
+        pila = new StaticPilaTDA<>();
         pila.InicializarPila();
     }
 

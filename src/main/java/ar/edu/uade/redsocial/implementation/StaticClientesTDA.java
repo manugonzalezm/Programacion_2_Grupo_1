@@ -6,8 +6,12 @@ import ar.edu.uade.redsocial.EstructuraABB.ABB;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -27,10 +31,17 @@ public class StaticClientesTDA implements ClientesTDA {
             return false;
         }
 
+        List<String> siguiendoValido = new ArrayList<>();
+        for (String s : cliente.getSiguiendo()) {
+            if (clientesPorNombre.containsKey(s)) {
+                siguiendoValido.add(s);
+            }
+        }
+
         Cliente clienteValido = new Cliente(
                 cliente.getNombre(),
                 cliente.getScoring(),
-                cliente.getSiguiendo(),
+                siguiendoValido,
                 cliente.getConexiones(),
                 cliente.getSolicitudesPendientes()
         );
@@ -104,8 +115,27 @@ public class StaticClientesTDA implements ClientesTDA {
     @Override
     public boolean agregarSeguido(String nombreCliente, String nombreSeguido) {
 
-        //Ahora solo envía solicitud
-        return enviarSolicitud(nombreCliente, nombreSeguido);
+        Cliente cliente = clientesPorNombre.get(nombreCliente);
+        Cliente seguido = clientesPorNombre.get(nombreSeguido);
+
+        if (cliente == null || seguido == null) return false;
+        if (nombreCliente.equals(nombreSeguido)) return false;
+        if (cliente.getSiguiendo().size() >= 2) return false;
+        if (cliente.getSiguiendo().contains(nombreSeguido)) return false;
+
+        List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
+        nuevoSiguiendo.add(nombreSeguido);
+
+        Cliente actualizado = new Cliente(
+                cliente.getNombre(),
+                cliente.getScoring(),
+                nuevoSiguiendo,
+                cliente.getConexiones(),
+                cliente.getSolicitudesPendientes()
+        );
+
+        clientesPorNombre.put(nombreCliente, actualizado);
+        return true;
     }
     
 
@@ -144,10 +174,23 @@ public class StaticClientesTDA implements ClientesTDA {
         quitarDeScoring(cliente);
         clientesPorNombre.remove(nombre);
 
-        for (Cliente c : clientesPorNombre.values()) {
-            c.getSiguiendo().remove(nombre);
-            c.getConexiones().remove(nombre);
-            c.getSolicitudesPendientes().remove(nombre);
+        for (String key : new ArrayList<>(clientesPorNombre.keySet())) {
+            Cliente c = clientesPorNombre.get(key);
+            List<String> nuevoSiguiendo = new ArrayList<>(c.getSiguiendo());
+            List<String> nuevasConexiones = new ArrayList<>(c.getConexiones());
+            List<String> nuevasSolicitudes = new ArrayList<>(c.getSolicitudesPendientes());
+
+            boolean changed = nuevoSiguiendo.remove(nombre)
+                            | nuevasConexiones.remove(nombre)
+                            | nuevasSolicitudes.remove(nombre);
+
+            if (changed) {
+                Cliente actualizado = new Cliente(
+                        c.getNombre(), c.getScoring(),
+                        nuevoSiguiendo, nuevasConexiones, nuevasSolicitudes
+                );
+                clientesPorNombre.put(key, actualizado);
+            }
         }
 
         return true;
@@ -260,46 +303,43 @@ public class StaticClientesTDA implements ClientesTDA {
     }
 
 
-    public void consultarConexiones(String nombre) {
+    /**
+     * Construye un ABB con los scorings de toda la red de conexiones alcanzable
+     * desde el cliente indicado (recorrido transitivo BFS por "siguiendo")
+     * y retorna los scorings que caen en el nivel 4 del árbol.
+     *
+     * Complejidad: O(v + e) para el recorrido BFS + O(v log v) para las inserciones en el ABB,
+     * donde v = clientes alcanzables y e = aristas de "siguiendo".
+     */
+    @Override
+    public List<Integer> consultarConexionesNivel4(String nombre) {
+
         Cliente cliente = clientesPorNombre.get(nombre);
-        if (cliente == null) {
-            System.out.println("Cliente no encontrado");
-            return;
-        }
+        if (cliente == null) return new ArrayList<>();
 
         ABB<Integer> arbol = new ABB<>();
+        Set<String> visitados = new HashSet<>();
+        visitados.add(nombre);
 
-        for (String seguido : cliente.getSiguiendo()) {
-            Cliente c = clientesPorNombre.get(seguido);
+        Queue<String> cola = new LinkedList<>(cliente.getSiguiendo());
+
+        while (!cola.isEmpty()) {
+            String actual = cola.poll();
+            if (visitados.contains(actual)) continue;
+            visitados.add(actual);
+
+            Cliente c = clientesPorNombre.get(actual);
             if (c != null) {
                 arbol.agregar(c.getScoring());
+                for (String sig : c.getSiguiendo()) {
+                    if (!visitados.contains(sig)) {
+                        cola.add(sig);
+                    }
+                }
             }
         }
 
-        System.out.println("Clientes en nivel 4:");
-        arbol.imprimirNivel(4);
+        return arbol.obtenerNivel(4);
     }
-
-
-    public void consultarConexionesNivel4(String nombre) {
-        Cliente cliente = clientesPorNombre.get(nombre);  // O(1)
-        if (cliente == null) {
-            System.out.println("Cliente no encontrado");
-            return;
-        }
-
-        ABB<Integer> arbol = new ABB<>(); // O(1)
-
-        for (String seguido : cliente.getSiguiendo()) {  // O(k) ，k = cantidad de seguidos (máx 2)
-            Cliente c = clientesPorNombre.get(seguido);
-            if (c != null) {
-                arbol.agregar(c.getScoring());
-            }
-        }
-
-        System.out.println("Clientes en nivel 4:");
-        arbol.imprimirNivel(4);
-    }
-
 
 }
