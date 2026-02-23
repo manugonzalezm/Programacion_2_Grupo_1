@@ -1,29 +1,38 @@
-package ar.edu.uade.redsocial;
+package ar.edu.uade.redsocial; // O(1)
 
-import ar.edu.uade.redsocial.model.Accion;
-import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
-import ar.edu.uade.redsocial.services.CargadorClientesJson;
-import ar.edu.uade.redsocial.services.ColaSolicitudesSeguimiento;
-import ar.edu.uade.redsocial.services.GestorClientes;
-import ar.edu.uade.redsocial.services.HistorialAcciones;
-import ar.edu.uade.redsocial.utils.MenuRedSocial;
+import ar.edu.uade.redsocial.model.Accion; // O(1)
+import ar.edu.uade.redsocial.model.SolicitudSeguimiento; // O(1)
+import ar.edu.uade.redsocial.services.CargadorClientesJson; // O(1)
+import ar.edu.uade.redsocial.services.ColaSolicitudesSeguimiento; // O(1)
+import ar.edu.uade.redsocial.services.GestorClientes; // O(1)
+import ar.edu.uade.redsocial.services.HistorialAcciones; // O(1)
+import ar.edu.uade.redsocial.utils.MenuRedSocial; // O(1)
 
-import java.util.Scanner;
+import java.util.Scanner; // O(1)
 
 public class Main {
 
     public static void main(String[] args) {
-        // Una sola instancia de cada servicio (todas respaldadas por TDAs: Cola, Pila, Diccionario)
-        GestorClientes gestorClientes = new GestorClientes();
-        HistorialAcciones historial = new HistorialAcciones();
-        ColaSolicitudesSeguimiento colaSolicitudes = new ColaSolicitudesSeguimiento();
 
-        CargadorClientesJson.readFromFile(gestorClientes);
+        // Crear servicios principales
+        GestorClientes gestorClientes = new GestorClientes(); // O(1)
+        HistorialAcciones historial = new HistorialAcciones(); // O(1)
+        ColaSolicitudesSeguimiento colaSolicitudes = new ColaSolicitudesSeguimiento(); // O(1)
 
-        Scanner scanner = new Scanner(System.in);
-        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestorClientes, historial, colaSolicitudes);
-        menuRedSocial.ejecutar();
+        // Cargar clientes desde JSON
+        CargadorClientesJson.readFromFile(gestorClientes); // O(n log n)
 
-        scanner.close();
+        // Crear scanner
+        Scanner scanner = new Scanner(System.in); // O(1)
+
+        // Crear menú principal
+        MenuRedSocial menuRedSocial =
+                new MenuRedSocial(scanner, gestorClientes, historial, colaSolicitudes); // O(1)
+
+        // Ejecutar sistema (bucle principal)
+        menuRedSocial.ejecutar(); // O(t*(p + A)) + O(n)
+
+        // Cerrar recursos
+        scanner.close(); // O(1)
     }
 }
