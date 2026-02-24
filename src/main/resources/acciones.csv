@@ -1,0 +1,22 @@
+tipo,detalle,fechaHora
+Registrarse,Profe,2026-02-23 21:23:34
+Registrarse,Flor,2026-02-23 21:23:27
+Registrarse,Chen,2026-02-23 21:23:19
+Registrarse,Manuel,2026-02-23 21:23:12
+Login,Manuel,2026-02-23 21:26:40
+Logout,Flor,2026-02-23 21:26:36
+Seguir,Flor -> Profe,2026-02-23 21:26:32
+Login,Flor,2026-02-23 21:26:26
+Logout,Chen,2026-02-23 21:26:22
+Seguir,Chen -> Flor,2026-02-23 21:26:18
+Login,Chen,2026-02-23 21:26:14
+Logout,Manuel,2026-02-23 21:26:09
+Seguir,Manuel -> Chen,2026-02-23 21:26:03
+Login,Manuel,2026-02-23 21:25:48
+Login,Chen,2026-02-23 21:37:38
+Logout,Manuel,2026-02-23 21:37:31
+Buscar por nombre,Chen,2026-02-23 21:36:37
+Buscar por scoring,50,2026-02-23 21:36:20
+Buscar por scoring,50,2026-02-23 21:36:07
+Buscar por nombre,Manuel,2026-02-23 21:36:02
+Login,Manuel,2026-02-23 21:35:55
