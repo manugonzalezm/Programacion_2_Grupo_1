@@ -1,7 +1,5 @@
 package ar.edu.uade.redsocial;
 
-import ar.edu.uade.redsocial.model.Accion;
-import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 import ar.edu.uade.redsocial.services.CargadorClientesJson;
 import ar.edu.uade.redsocial.services.ColaSolicitudesSeguimiento;
 import ar.edu.uade.redsocial.services.GestorClientes;

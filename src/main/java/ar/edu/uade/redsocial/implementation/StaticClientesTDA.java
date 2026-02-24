@@ -1,345 +1,329 @@
 package ar.edu.uade.redsocial.implementation;
 
+import ar.edu.uade.redsocial.EstructuraABB.ABB;
+import ar.edu.uade.redsocial.basic_tdas.implementation.GrafoLA;
+import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 import ar.edu.uade.redsocial.model.Cliente;
 import ar.edu.uade.redsocial.tda.ClientesTDA;
-import ar.edu.uade.redsocial.EstructuraABB.ABB;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
- * Implementación eficiente de ClientesTDA usando HashMap y TreeMap.
- * - HashMap nombre -> Buscar cliente por nombre → O(1)
- * - TreeMap scoring -> Insertar por scoring → O(log n)
+ * Implementación de ClientesTDA que usa cuatro estructuras para
+ * no duplicar datos y mantener las búsquedas eficientes:
+ *
+ *  - HashMap por nombre  → búsqueda directa O(1)
+ *  - TreeMap por scoring → búsqueda ordenada O(log n)
+ *  - GrafoLA dirigido    → seguimiento (A sigue a B sin aprobación)
+ *  - GrafoLA no dirigido → amistades (requieren solicitud y aceptación)
+ *
+ * Los grafos trabajan con IDs enteros, así que se mantiene un mapeo
+ * interno entre nombres y números para poder traducir entre ambos.
  */
 public class StaticClientesTDA implements ClientesTDA {
 
-    private final Map<String, Cliente> clientesPorNombre = new HashMap<>();
-    private final Map<Integer, List<String>> clientesPorScoring = new TreeMap<>();
+    private static final int MAX_SEGUIDOS = 2;
+
+    // datos de clientes
+    private final Map<String, Cliente>        clientesPorNombre  = new HashMap<>();
+    private final Map<Integer, List<String>>  clientesPorScoring = new TreeMap<>();
+
+    // mapeo nombre <-> id para los grafos
+    private final Map<String, Integer> nombreAId = new HashMap<>();
+    private final Map<Integer, String> idANombre = new HashMap<>();
+    private int nextId = 1;
+
+    // grafos de relaciones
+    private final GrafoLA grafoDirigido;    // seguimiento
+    private final GrafoLA grafoNoDirigido;  // amistades
+
+    public StaticClientesTDA() {
+        grafoDirigido = new GrafoLA();
+        grafoDirigido.InicializarGrafo();
+        grafoNoDirigido = new GrafoLA();
+        grafoNoDirigido.InicializarGrafo();
+    }
+
+    // busca el id de un cliente, devuelve -1 si no existe
+    private int idDe(String nombre) {
+        Integer id = nombreAId.get(nombre);
+        return (id != null) ? id : -1;
+    }
+
+    // convierte un conjunto de IDs en un set de nombres (vacía el conjunto)
+    private Set<String> idsANombres(ConjuntoTDA<Integer> ids) {
+        Set<String> result = new HashSet<>();
+        while (!ids.ConjuntoVacio()) {
+            int id = ids.Elegir();
+            ids.Sacar(id);
+            String nombre = idANombre.get(id);
+            if (nombre != null) result.add(nombre);
+        }
+        return result;
+    }
 
     @Override
-    public boolean agregarCliente(Cliente cliente) {
+    public boolean agregarCliente(Cliente cliente) { // O(1)
+        if (clientesPorNombre.containsKey(cliente.getNombre())) return false;
 
-        if (clientesPorNombre.containsKey(cliente.getNombre())) {
-            return false;
-        }
-
-        List<String> siguiendoValido = new ArrayList<>();
-        for (String s : cliente.getSiguiendo()) {
-            if (clientesPorNombre.containsKey(s)) {
-                siguiendoValido.add(s);
-            }
-        }
-
-        Cliente clienteValido = new Cliente(
-                cliente.getNombre(),
-                cliente.getScoring(),
-                siguiendoValido,
-                cliente.getConexiones(),
-                cliente.getSolicitudesPendientes()
-        );
-
-        clientesPorNombre.put(clienteValido.getNombre(), clienteValido);
-
+        int id = nextId++;
+        clientesPorNombre.put(cliente.getNombre(), cliente);
         clientesPorScoring
-                .computeIfAbsent(clienteValido.getScoring(), k -> new ArrayList<>())
-                .add(clienteValido.getNombre());
-
+                .computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>())
+                .add(cliente.getNombre());
+        nombreAId.put(cliente.getNombre(), id);
+        idANombre.put(id, cliente.getNombre());
+        grafoDirigido.AgregarVertice(id);
+        grafoNoDirigido.AgregarVertice(id);
         return true;
     }
 
     @Override
-    public Cliente buscarPorNombre(String nombre) {
+    public Cliente buscarPorNombre(String nombre) { // O(1)
         return clientesPorNombre.get(nombre);
     }
 
     @Override
-    public List<Cliente> buscarPorScoring(int scoring) {
-
-        List<String> nombres =
-                clientesPorScoring.getOrDefault(scoring, new ArrayList<>());
-
+    public List<Cliente> buscarPorScoring(int scoring) { // O(log n)
+        List<String> nombres = clientesPorScoring.getOrDefault(scoring, new ArrayList<>());
         List<Cliente> resultado = new ArrayList<>();
-
         for (String nombre : nombres) {
-            Cliente cliente = clientesPorNombre.get(nombre);
-            if (cliente != null) {
-                resultado.add(cliente);
-            }
+            Cliente c = clientesPorNombre.get(nombre);
+            if (c != null) resultado.add(c);
         }
-
         return resultado;
     }
 
     @Override
-    public int cantidadClientes() {
+    public int cantidadClientes() { // O(1)
         return clientesPorNombre.size();
     }
 
     @Override
-    public List<Cliente> listarClientes() {
+    public List<Cliente> listarClientes() { // O(n)
         return new ArrayList<>(clientesPorNombre.values());
     }
 
     @Override
-    public boolean modificarSeguidor(Cliente cliente) {
+    public boolean modificarCliente(Cliente cliente) { // O(log n)
+        Cliente existente = clientesPorNombre.get(cliente.getNombre());
+        if (existente == null) return false;
 
-        String nombre = cliente.getNombre();
-        Cliente existente = clientesPorNombre.get(nombre);
-
-        if (existente == null) {
-            return false;
-        }
-
-        // Quitar del índice anterior
         quitarDeScoring(existente);
-
-        // Actualizar en HashMap
-        clientesPorNombre.put(nombre, cliente);
-
-        // Agregar al nuevo índice
+        clientesPorNombre.put(cliente.getNombre(), cliente);
         clientesPorScoring
                 .computeIfAbsent(cliente.getScoring(), k -> new ArrayList<>())
                 .add(cliente.getNombre());
-
         return true;
     }
 
     @Override
-    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) {
-
-        Cliente cliente = clientesPorNombre.get(nombreCliente);
-        Cliente seguido = clientesPorNombre.get(nombreSeguido);
-
-        if (cliente == null || seguido == null) return false;
-        if (nombreCliente.equals(nombreSeguido)) return false;
-        if (cliente.getSiguiendo().size() >= 2) return false;
-        if (cliente.getSiguiendo().contains(nombreSeguido)) return false;
-
-        List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
-        nuevoSiguiendo.add(nombreSeguido);
-
-        Cliente actualizado = new Cliente(
-                cliente.getNombre(),
-                cliente.getScoring(),
-                nuevoSiguiendo,
-                cliente.getConexiones(),
-                cliente.getSolicitudesPendientes()
-        );
-
-        clientesPorNombre.put(nombreCliente, actualizado);
-        return true;
-    }
-    
-
-
-    @Override
-    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) {
-
-        Cliente cliente = clientesPorNombre.get(nombreCliente);
-        if (cliente == null) return false;
-        if (!cliente.getSiguiendo().contains(nombreSeguido)) return false;
-
-        List<String> nuevoSiguiendo = new ArrayList<>(cliente.getSiguiendo());
-        nuevoSiguiendo.remove(nombreSeguido);
-
-        Cliente actualizado = new Cliente(
-                cliente.getNombre(),
-                cliente.getScoring(),
-                nuevoSiguiendo,
-                cliente.getConexiones(),
-                cliente.getSolicitudesPendientes()
-        );
-
-        clientesPorNombre.put(nombreCliente, actualizado);
-
-        return true;
-    }
-
-
-    
-    @Override
-    public boolean eliminarCliente(String nombre) {
-
+    public boolean eliminarCliente(String nombre) { // O(V + E)
         Cliente cliente = clientesPorNombre.get(nombre);
         if (cliente == null) return false;
 
+        int id = idDe(nombre);
         quitarDeScoring(cliente);
         clientesPorNombre.remove(nombre);
+        nombreAId.remove(nombre);
+        idANombre.remove(id);
+
+        grafoDirigido.EliminarVertice(id);
+        grafoNoDirigido.EliminarVertice(id);
 
         for (String key : new ArrayList<>(clientesPorNombre.keySet())) {
             Cliente c = clientesPorNombre.get(key);
-            List<String> nuevoSiguiendo = new ArrayList<>(c.getSiguiendo());
-            List<String> nuevasConexiones = new ArrayList<>(c.getConexiones());
-            List<String> nuevasSolicitudes = new ArrayList<>(c.getSolicitudesPendientes());
-
-            boolean changed = nuevoSiguiendo.remove(nombre)
-                            | nuevasConexiones.remove(nombre)
-                            | nuevasSolicitudes.remove(nombre);
-
-            if (changed) {
-                Cliente actualizado = new Cliente(
-                        c.getNombre(), c.getScoring(),
-                        nuevoSiguiendo, nuevasConexiones, nuevasSolicitudes
-                );
-                clientesPorNombre.put(key, actualizado);
+            List<String> solicitudes = new ArrayList<>(c.getSolicitudesPendientes());
+            if (solicitudes.remove(nombre)) {
+                clientesPorNombre.put(key, new Cliente(c.getNombre(), c.getScoring(), solicitudes));
             }
         }
-
         return true;
     }
 
-
-    /** Quita un cliente del índice por scoring */
     private void quitarDeScoring(Cliente cliente) {
-
         List<String> lista = clientesPorScoring.get(cliente.getScoring());
-
         if (lista != null) {
-
-            lista.removeIf(nombre -> nombre.equals(cliente.getNombre()));
-
-            if (lista.isEmpty()) {
-                clientesPorScoring.remove(cliente.getScoring());
-            }
+            lista.removeIf(n -> n.equals(cliente.getNombre()));
+            if (lista.isEmpty()) clientesPorScoring.remove(cliente.getScoring());
         }
     }
 
+    // --- seguimiento ---
+
+    @Override
+    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // O(grado)
+        if (!clientesPorNombre.containsKey(nombreCliente)) return false;
+        if (!clientesPorNombre.containsKey(nombreSeguido)) return false;
+        if (nombreCliente.equals(nombreSeguido)) return false;
+
+        int idCliente  = idDe(nombreCliente);
+        int idSeguido  = idDe(nombreSeguido);
+        if (grafoDirigido.GradoSalida(idCliente) >= MAX_SEGUIDOS) return false;
+        if (grafoDirigido.ExisteArista(idCliente, idSeguido)) return false;
+
+        grafoDirigido.AgregarArista(idCliente, idSeguido, 1);
+        return true;
+    }
+
+    @Override
+    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // O(grado)
+        if (!clientesPorNombre.containsKey(nombreCliente)) return false;
+        int idCliente = idDe(nombreCliente);
+        int idSeguido = idDe(nombreSeguido);
+        if (idSeguido == -1 || !grafoDirigido.ExisteArista(idCliente, idSeguido)) return false;
+
+        grafoDirigido.EliminarArista(idCliente, idSeguido);
+        return true;
+    }
+
+    @Override
+    public Set<String> obtenerSeguidos(String nombreCliente) { // O(grado)
+        int id = idDe(nombreCliente);
+        if (id == -1) return Collections.emptySet();
+        return idsANombres(grafoDirigido.ObtenerAdyacentes(id));
+    }
+
+    @Override
+    public int calcularDistanciaSeguimiento(String origen, String destino) { // O(Vert + Arist)
+        int idO = idDe(origen);
+        int idD = idDe(destino);
+        if (idO == -1 || idD == -1) return -1;
+        return bfs(grafoDirigido, idO, idD);
+    }
+
+    // --- amistades ---
+
+    @Override
+    public void agregarAmistad(String a, String b) { // O(grado)
+        if (!clientesPorNombre.containsKey(a) || !clientesPorNombre.containsKey(b)) return;
+        int idA = idDe(a);
+        int idB = idDe(b);
+        grafoNoDirigido.AgregarArista(idA, idB, 1);
+        grafoNoDirigido.AgregarArista(idB, idA, 1);
+    }
+
+    @Override
+    public void eliminarAmistad(String a, String b) { // O(grado)
+        int idA = idDe(a);
+        int idB = idDe(b);
+        if (idA == -1 || idB == -1) return;
+        grafoNoDirigido.EliminarArista(idA, idB);
+        grafoNoDirigido.EliminarArista(idB, idA);
+    }
+
+    @Override
+    public Set<String> obtenerVecinos(String nombreCliente) { // O(grado)
+        int id = idDe(nombreCliente);
+        if (id == -1) return Collections.emptySet();
+        return idsANombres(grafoNoDirigido.ObtenerAdyacentes(id));
+    }
+
+    @Override
+    public int calcularDistanciaAmistad(String origen, String destino) { // O(Vert + Arist)
+        int idO = idDe(origen);
+        int idD = idDe(destino);
+        if (idO == -1 || idD == -1) return -1;
+        return bfs(grafoNoDirigido, idO, idD);
+    }
+
+    // --- ABB de conexiones ---
+
+    @Override
+    public List<Integer> consultarConexionesNivel4(String nombre) { // O(Vert + Arist + Vert·log Vert)
+        if (!clientesPorNombre.containsKey(nombre)) return new ArrayList<>();
+
+        ABB<Integer> arbol = new ABB<>();
+        Set<Integer> visitados = new HashSet<>();
+        int idInicio = idDe(nombre);
+        visitados.add(idInicio);
+
+        Queue<Integer> cola = new LinkedList<>();
+        ConjuntoTDA<Integer> vecinosInicio = grafoDirigido.ObtenerAdyacentes(idInicio);
+        while (!vecinosInicio.ConjuntoVacio()) {
+            int v = vecinosInicio.Elegir();
+            vecinosInicio.Sacar(v);
+            cola.add(v);
+        }
+
+        while (!cola.isEmpty()) {
+            int idActual = cola.poll();
+            if (visitados.contains(idActual)) continue;
+            visitados.add(idActual);
+
+            String nombreActual = idANombre.get(idActual);
+            Cliente c = (nombreActual != null) ? clientesPorNombre.get(nombreActual) : null;
+            if (c != null) {
+                arbol.agregar(c.getScoring());
+                ConjuntoTDA<Integer> vecinos = grafoDirigido.ObtenerAdyacentes(idActual);
+                while (!vecinos.ConjuntoVacio()) {
+                    int v = vecinos.Elegir();
+                    vecinos.Sacar(v);
+                    if (!visitados.contains(v)) cola.add(v);
+                }
+            }
+        }
+        return arbol.obtenerNivel(4);
+    }
+
+    // BFS sobre cualquier GrafoLA, devuelve la distancia en saltos o -1 si no hay camino
+    private int bfs(GrafoLA grafo, int idOrigen, int idDestino) { // O(Vert + Arist)
+        if (idOrigen == idDestino) return 0;
+        Map<Integer, Integer> distancias = new HashMap<>();
+        Queue<Integer> cola = new LinkedList<>();
+        distancias.put(idOrigen, 0);
+        cola.add(idOrigen);
+
+        while (!cola.isEmpty()) {
+            int actual = cola.poll();
+            int dist   = distancias.get(actual);
+
+            ConjuntoTDA<Integer> vecinos = grafo.ObtenerAdyacentes(actual);
+            while (!vecinos.ConjuntoVacio()) {
+                int v = vecinos.Elegir();
+                vecinos.Sacar(v);
+                if (!distancias.containsKey(v)) {
+                    int nueva = dist + 1;
+                    distancias.put(v, nueva);
+                    if (v == idDestino) return nueva;
+                    cola.add(v);
+                }
+            }
+        }
+        return -1;
+    }
+
+    // --- solicitudes de amistad ---
 
     public boolean enviarSolicitud(String emisor, String receptor) {
-
         Cliente clienteReceptor = clientesPorNombre.get(receptor);
         if (clienteReceptor == null) return false;
         if (emisor.equals(receptor)) return false;
         if (clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
 
-        List<String> nuevasSolicitudes =
-                new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
-        nuevasSolicitudes.add(emisor);
-
-        Cliente actualizado = new Cliente(
-                clienteReceptor.getNombre(),
-                clienteReceptor.getScoring(),
-                clienteReceptor.getSiguiendo(),
-                clienteReceptor.getConexiones(),
-                nuevasSolicitudes
-        );
-
-        clientesPorNombre.put(receptor, actualizado);
-
+        List<String> nuevas = new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
+        nuevas.add(emisor);
+        clientesPorNombre.put(receptor,
+                new Cliente(clienteReceptor.getNombre(), clienteReceptor.getScoring(), nuevas));
         return true;
     }
 
-    public boolean aceptarSolicitud(String receptor, String emisor) {
-
+    public boolean aceptarSolicitudAmistad(String receptor, String emisor) {
         Cliente clienteReceptor = clientesPorNombre.get(receptor);
-        Cliente clienteEmisor = clientesPorNombre.get(emisor);
-
+        Cliente clienteEmisor   = clientesPorNombre.get(emisor);
         if (clienteReceptor == null || clienteEmisor == null) return false;
         if (!clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
 
-        //Cada cliente puede seguir hasta dos clientes
-        if (clienteEmisor.getSiguiendo().size() >= 2) return false;
+        List<String> nuevas = new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
+        nuevas.remove(emisor);
+        clientesPorNombre.put(receptor,
+                new Cliente(clienteReceptor.getNombre(), clienteReceptor.getScoring(), nuevas));
 
-        // quitar solicitud
-        List<String> nuevasSolicitudes =
-                new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
-        nuevasSolicitudes.remove(emisor);
-
-        Cliente receptorActualizado = new Cliente(
-                clienteReceptor.getNombre(),
-                clienteReceptor.getScoring(),
-                clienteReceptor.getSiguiendo(),
-                clienteReceptor.getConexiones(),
-                nuevasSolicitudes
-        );
-        clientesPorNombre.put(receptor, receptorActualizado);
-
-        // agregar en siguiendo del emisor
-        List<String> nuevoSiguiendo =
-                new ArrayList<>(clienteEmisor.getSiguiendo());
-        nuevoSiguiendo.add(receptor);
-
-        Cliente emisorActualizado = new Cliente(
-                clienteEmisor.getNombre(),
-                clienteEmisor.getScoring(),
-                nuevoSiguiendo,
-                clienteEmisor.getConexiones(),
-                clienteEmisor.getSolicitudesPendientes()
-        );
-        clientesPorNombre.put(emisor, emisorActualizado);
-
+        int idReceptor = idDe(receptor);
+        int idEmisor   = idDe(emisor);
+        grafoNoDirigido.AgregarArista(idReceptor, idEmisor, 1);
+        grafoNoDirigido.AgregarArista(idEmisor, idReceptor, 1);
         return true;
-    }
-
-    public boolean rechazarSolicitud(String receptor, String emisor) {
-
-        Cliente clienteReceptor = clientesPorNombre.get(receptor);
-        if (clienteReceptor == null) return false;
-        if (!clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
-
-        List<String> nuevasSolicitudes =
-                new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
-        nuevasSolicitudes.remove(emisor);
-
-        Cliente actualizado = new Cliente(
-                clienteReceptor.getNombre(),
-                clienteReceptor.getScoring(),
-                clienteReceptor.getSiguiendo(),
-                clienteReceptor.getConexiones(),
-                nuevasSolicitudes
-        );
-
-        clientesPorNombre.put(receptor, actualizado);
-
-        return true;
-    }
-
-
-    /**
-     * Construye un ABB con los scorings de toda la red de conexiones alcanzable
-     * desde el cliente indicado (recorrido transitivo BFS por "siguiendo")
-     * y retorna los scorings que caen en el nivel 4 del árbol.
-     *
-     * Complejidad: O(v + e) para el recorrido BFS + O(v log v) para las inserciones en el ABB,
-     * donde v = clientes alcanzables y e = aristas de "siguiendo".
-     */
-    @Override
-    public List<Integer> consultarConexionesNivel4(String nombre) {
-
-        Cliente cliente = clientesPorNombre.get(nombre);
-        if (cliente == null) return new ArrayList<>();
-
-        ABB<Integer> arbol = new ABB<>();
-        Set<String> visitados = new HashSet<>();
-        visitados.add(nombre);
-
-        Queue<String> cola = new LinkedList<>(cliente.getSiguiendo());
-
-        while (!cola.isEmpty()) {
-            String actual = cola.poll();
-            if (visitados.contains(actual)) continue;
-            visitados.add(actual);
-
-            Cliente c = clientesPorNombre.get(actual);
-            if (c != null) {
-                arbol.agregar(c.getScoring());
-                for (String sig : c.getSiguiendo()) {
-                    if (!visitados.contains(sig)) {
-                        cola.add(sig);
-                    }
-                }
-            }
-        }
-
-        return arbol.obtenerNivel(4);
     }
 
 }

@@ -2,13 +2,13 @@ package ar.edu.uade.redsocial.basic_tdas.tda;
 
 public interface PilaTDA<T> {
 
-    void InicializarPila();
+    void InicializarPila(); // O(1)
 
-    void Apilar(T x);
+    void Apilar(T x); // O(1)
 
-    void Desapilar();
+    void Desapilar(); // O(1)
 
-    boolean PilaVacia();
+    boolean PilaVacia(); // O(1)
 
-    T Tope();
+    T Tope(); // O(1)
 }

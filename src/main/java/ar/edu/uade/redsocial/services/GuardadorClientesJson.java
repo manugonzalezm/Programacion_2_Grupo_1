@@ -16,7 +16,7 @@ public class GuardadorClientesJson {
     private static class ClienteJson {
         String nombre;
         int scoring;
-        List<String> siguiendo = new ArrayList<>();
+        List<String> siguiendo  = new ArrayList<>();
         List<String> conexiones = new ArrayList<>();
     }
 
@@ -24,39 +24,41 @@ public class GuardadorClientesJson {
         List<ClienteJson> clientes;
     }
 
-    public static void guardar(GestorClientes gestor) { // complejidad O(n), n = clientes
+    /**
+     * Serializa el estado actual del gestor a clientes.json.
+     * Las relaciones se obtienen de los grafos (via gestor), no del objeto Cliente,
+     * evitando duplicación de datos.
+     */
+    public static void guardar(GestorClientes gestor) { // O(n + e)
         try {
             URL url = CargadorClientesJson.class.getClassLoader().getResource("clientes.json");
-            if (url == null) {
-                return;
-            }
+            if (url == null) return;
+
             URI uri = url.toURI();
-            if (!"file".equals(uri.getScheme())) {
-                return;
-            }
+            if (!"file".equals(uri.getScheme())) return;
+
             Path path = Paths.get(uri);
-            // Si estamos en target/classes (Maven), guardar en src/main/resources para que se actualice el fuente
             String pathStr = path.toString();
             if (pathStr.contains("target" + java.io.File.separator + "classes")) {
-                path = Paths.get(pathStr.replace("target" + java.io.File.separator + "classes", "src" + java.io.File.separator + "main" + java.io.File.separator + "resources"));
+                path = Paths.get(pathStr.replace(
+                        "target" + java.io.File.separator + "classes",
+                        "src" + java.io.File.separator + "main" + java.io.File.separator + "resources"));
             }
 
             List<ClienteJson> lista = new ArrayList<>();
             for (Cliente c : gestor.listarClientes()) {
                 ClienteJson cj = new ClienteJson();
-                cj.nombre = c.getNombre();
-                cj.scoring = c.getScoring();
-                cj.siguiendo = new ArrayList<>(c.getSiguiendo());
-                cj.conexiones = new ArrayList<>(c.getConexiones());
+                cj.nombre   = c.getNombre();
+                cj.scoring  = c.getScoring();
+                cj.siguiendo  = new ArrayList<>(gestor.obtenerSeguidos(c.getNombre()));
+                cj.conexiones = new ArrayList<>(gestor.obtenerVecinos(c.getNombre()));
                 lista.add(cj);
             }
+
             ClientesJson datos = new ClientesJson();
             datos.clientes = lista;
 
-            Gson gson = new Gson();
-            String json = gson.toJson(datos);
-
-            Files.writeString(path, json);
+            Files.writeString(path, new Gson().toJson(datos));
         } catch (Exception e) {
             throw new RuntimeException("No se pudo guardar clientes.json: " + e.getMessage());
         }

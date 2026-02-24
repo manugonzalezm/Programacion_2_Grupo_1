@@ -8,30 +8,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class SolicitudSeguimientoTest {
 
     @Test
-    void getters() {
+    void gettersYToString() {
         SolicitudSeguimiento s = new SolicitudSeguimiento("Alice", "Bob");
         assertEquals("Alice", s.getSolicitante());
         assertEquals("Bob", s.getSolicitado());
+        assertEquals("Alice -> Bob", s.toString());
     }
 
     @Test
-    void getOrigenDestino() {
-        SolicitudSeguimiento s = new SolicitudSeguimiento("Alice", "Bob");
-        assertEquals("Alice", s.getOrigen());
-        assertEquals("Bob", s.getDestino());
-    }
-
-    @Test
-    void toStringTieneAmbosNombres() {
-        SolicitudSeguimiento s = new SolicitudSeguimiento("A", "B");
-        String str = s.toString();
-        assertTrue(str.contains("A"));
-        assertTrue(str.contains("B"));
-    }
-
-    @Test
-    void toStringFormato() {
+    void origenYDestino() {
         SolicitudSeguimiento s = new SolicitudSeguimiento("X", "Y");
-        assertEquals("X -> Y", s.toString());
+        assertEquals("X", s.getOrigen());
+        assertEquals("Y", s.getDestino());
     }
 }

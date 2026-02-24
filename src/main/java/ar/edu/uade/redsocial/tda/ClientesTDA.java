@@ -3,59 +3,62 @@ package ar.edu.uade.redsocial.tda;
 import ar.edu.uade.redsocial.model.Cliente;
 
 import java.util.List;
+import java.util.Set;
 
 /**
- * TDA para la gestión de clientes.
- * Implementación eficiente con HashMap (nombre) y TreeMap (scoring).
+ * Define las operaciones disponibles sobre el conjunto de clientes.
+ * Maneja datos básicos (nombre, scoring) y dos tipos de relaciones:
+ * seguimiento directo y amistades (estas últimas con solicitud previa).
  */
 public interface ClientesTDA {
 
-    /**
-     * Agrega un cliente. Si ya existe uno con el mismo nombre, no se agrega.
-     * Incluye siguiendo y conexiones del cliente.
-     */
-    boolean agregarCliente(Cliente cliente); // complejidad O(s + c)
+    boolean agregarCliente(Cliente cliente); // O(1)
 
-    /** Devuelve el cliente con el nombre dado, o null si no existe. */
-    Cliente buscarPorNombre(String nombre); // complejidad O(1)
+    Cliente buscarPorNombre(String nombre); // O(1)
 
-    /** Devuelve todos los clientes con el scoring indicado. */
-    List<Cliente> buscarPorScoring(int scoring); // complejidad O(log n)
+    List<Cliente> buscarPorScoring(int scoring); // O(log n)
 
-    /** Cantidad de clientes almacenados. */
-    int cantidadClientes(); // complejidad O(1)
+    int cantidadClientes(); // O(1)
 
-    /** Lista todos los clientes (nombre, scoring, siguiendo, conexiones). */
-    List<Cliente> listarClientes(); // complejidad O(n)
+    List<Cliente> listarClientes(); // O(n)
 
-    /**
-     * Actualiza scoring, siguiendo y conexiones del cliente identificado por nombre.
-     * Retorna false si el cliente no existe.
-     */
-    boolean modificarSeguidor(Cliente cliente); // complejidad O(k)
+    /** Actualiza el scoring del cliente. Retorna false si no existe. */
+    boolean modificarCliente(Cliente cliente); // O(log n)
+
+    boolean eliminarCliente(String nombre); // O(V)
+
+    // --- seguimiento ---
 
     /**
-     * Agrega "nombreSeguido" a la lista de siguiendo de "nombreCliente".
-     * Retorna true solo si ambos clientes existen, el seguido no es el mismo cliente y aún no lo seguía.
+     * Agrega el seguimiento de nombreCliente hacia nombreSeguido.
+     * Cada cliente puede seguir como máximo 2 usuarios.
      */
-    boolean agregarSeguido(String nombreCliente, String nombreSeguido); // complejidad O(s)
+    boolean agregarSeguido(String nombreCliente, String nombreSeguido); // O(grado)
+
+    boolean quitarSeguido(String nombreCliente, String nombreSeguido); // O(grado)
+
+    Set<String> obtenerSeguidos(String nombreCliente); // O(grado)
+
+    /** Distancia en saltos entre dos clientes por seguimiento (BFS). */
+    int calcularDistanciaSeguimiento(String origen, String destino); // O(Vert + Arist)
+
+    // --- amistades ---
+
+    /** Crea la amistad entre a y b en ambas direcciones. */
+    void agregarAmistad(String a, String b); // O(grado)
+
+    void eliminarAmistad(String a, String b); // O(grado)
+
+    Set<String> obtenerVecinos(String nombreCliente); // O(grado)
+
+    /** Distancia en saltos entre dos clientes por amistad (BFS). */
+    int calcularDistanciaAmistad(String origen, String destino); // O(Vert + Arist)
+
+    // --- ABB de conexiones ---
 
     /**
-     * Elimina el cliente con el nombre dado. Retorna false si no existe.
-     * Usado para deshacer "Agregar cliente".
+     * Recorre la red de seguimiento con BFS, inserta los scorings en un ABB
+     * y devuelve los del nivel 4.
      */
-    boolean eliminarCliente(String nombre); // complejidad O(n)
-
-    /**
-     * Quita "nombreSeguido" de la lista de siguiendo de "nombreCliente".
-     * Retorna true si existía y se quitó. Usado para deshacer "Procesar solicitud".
-     */
-    boolean quitarSeguido(String nombreCliente, String nombreSeguido); // complejidad O(s)
-
-    /**
-     * Construye un ABB con los scorings de toda la red de conexiones transitiva
-     * del cliente indicado (BFS por "siguiendo") y retorna los scorings en el nivel 4.
-     * Retorna lista vacía si el cliente no existe o no hay nodos en nivel 4.
-     */
-    List<Integer> consultarConexionesNivel4(String nombre); // complejidad O(v + e + v log v)
+    List<Integer> consultarConexionesNivel4(String nombre); // O(Vert + Arist + Vert·log Vert)
 }

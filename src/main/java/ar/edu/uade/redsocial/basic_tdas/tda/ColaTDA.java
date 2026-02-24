@@ -2,13 +2,13 @@ package ar.edu.uade.redsocial.basic_tdas.tda;
 
 public interface ColaTDA<T> {
 
-    void InicializarCola();
+    void InicializarCola(); // O(1)
 
-    void Acolar(T x);
+    void Acolar(T x); // O(1)
 
-    void Desacolar();
+    void Desacolar(); // O(1) enlazada / O(n) estática
 
-    boolean ColaVacia();
+    boolean ColaVacia(); // O(1)
 
-    T Primero();
+    T Primero(); // O(1)
 }

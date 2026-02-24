@@ -4,11 +4,13 @@ import ar.edu.uade.redsocial.basic_tdas.tda.ColaTDA;
 
 public class StaticColaTDA<T> implements ColaTDA<T> {
 
+    private static final int CAPACIDAD = 1_100_000;
+
     Object[] a;
     int indice;
 
     public void InicializarCola() { // complejidad O(1)
-        a = new Object[100];
+        a = new Object[CAPACIDAD];
         indice = 0;
     }
 

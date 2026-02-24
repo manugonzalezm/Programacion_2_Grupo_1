@@ -1,12 +1,13 @@
 package ar.edu.uade.redsocial.model;
 
 /**
- * Representa una solicitud de seguimiento entre dos clientes.
+ * Representa una solicitud de amistad entre dos clientes.
+ * Cuando es aceptada, crea un vínculo bidireccional en el grafo de amistades.
  *
  * Invariante de representación:
- * - origen != null y no vacío. Nombre del cliente que quiere seguir a otro.
- * - destino != null y no vacío. Nombre del cliente al que se quiere seguir.
- * - origen != destino. Un cliente no puede solicitar seguirse a sí mismo.
+ * - origen != null y no vacío. Nombre del cliente que envía la solicitud.
+ * - destino != null y no vacío. Nombre del cliente que la recibe.
+ * - origen != destino. Un cliente no puede enviarse una solicitud a sí mismo.
  * - Una vez creada, la solicitud es inmutable (no existen setters).
  */
 public class SolicitudSeguimiento {

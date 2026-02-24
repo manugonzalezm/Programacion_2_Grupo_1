@@ -2,69 +2,88 @@ package ar.edu.uade.redsocial.services;
 
 import ar.edu.uade.redsocial.implementation.StaticClientesTDA;
 import ar.edu.uade.redsocial.model.Cliente;
-import ar.edu.uade.redsocial.tda.ClientesTDA;
 
 import java.util.List;
+import java.util.Set;
 
 /**
- * Servicio de gestión de clientes. Delega en ClientesTDA (StaticClientesTDA).
- * Usa HashMap para búsqueda por nombre O(1) y TreeMap para búsqueda por scoring O(log n).
+ * Servicio que expone las operaciones sobre clientes.
+ * Internamente delega todo en StaticClientesTDA, que combina
+ * un HashMap, un TreeMap y dos grafos (dirigido y no dirigido).
  */
 public class GestorClientes {
 
-    private final ClientesTDA clientesTDA;
+    private final StaticClientesTDA clientesTDA;
 
-    public GestorClientes() { // complejidad O(1)
+    public GestorClientes() {
         this.clientesTDA = new StaticClientesTDA();
     }
 
-    public boolean agregarCliente(Cliente cliente) { // complejidad O(s + c), s = siguiendo, c = conexiones
+    public boolean agregarCliente(Cliente cliente) { // O(1)
         return clientesTDA.agregarCliente(cliente);
     }
 
-    public boolean modificarSeguidor(Cliente cliente) { // complejidad O(k), k = clientes con mismo scoring
-        return clientesTDA.modificarSeguidor(cliente);
+    public boolean modificarCliente(Cliente cliente) { // O(log n)
+        return clientesTDA.modificarCliente(cliente);
     }
 
-    /**
-     * Aplica una relación de seguimiento (solicitante pasa a seguir a solicitado).
-     * Retorna true si ambos existen, son distintos y no se seguía ya; actualiza la lista de clientes.
-     */
-    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(s), s = siguiendo
-        return clientesTDA.agregarSeguido(nombreCliente, nombreSeguido);
-    }
-
-    /** Elimina el cliente. Usado al deshacer "Agregar cliente". */
-    public boolean eliminarCliente(String nombre) { // complejidad O(n), n = total clientes
+    public boolean eliminarCliente(String nombre) { // O(Vert)
         return clientesTDA.eliminarCliente(nombre);
     }
 
-    /** Quita un seguido. Usado al deshacer "Procesar solicitud". */
-    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // complejidad O(s), s = siguiendo
-        return clientesTDA.quitarSeguido(nombreCliente, nombreSeguido);
-    }
-
-    public Cliente buscarPorNombre(String nombre) { // complejidad O(1)
+    public Cliente buscarPorNombre(String nombre) { // O(1)
         return clientesTDA.buscarPorNombre(nombre);
     }
 
-    public List<Cliente> buscarPorScoring(int scoring) { // complejidad O(log n)
+    public List<Cliente> buscarPorScoring(int scoring) { // O(log n)
         return clientesTDA.buscarPorScoring(scoring);
     }
 
-    public int cantidadClientes() { // complejidad O(1)
+    public int cantidadClientes() { // O(1)
         return clientesTDA.cantidadClientes();
     }
 
-    public List<Cliente> listarClientes() { // complejidad O(n)
+    public List<Cliente> listarClientes() { // O(n)
         return clientesTDA.listarClientes();
     }
 
-    /**
-     * Recorre la red transitiva de "siguiendo" del cliente, construye un ABB
-     * con los scorings alcanzables y retorna los que caen en el nivel 4 del árbol.
-     */
-    public List<Integer> consultarConexionesNivel4(String nombre) { // complejidad O(v + e + v log v)
+    // --- seguimiento (sin aprobación) ---
+
+    public boolean agregarSeguido(String nombreCliente, String nombreSeguido) { // O(grado)
+        return clientesTDA.agregarSeguido(nombreCliente, nombreSeguido);
+    }
+
+    public boolean quitarSeguido(String nombreCliente, String nombreSeguido) { // O(grado)
+        return clientesTDA.quitarSeguido(nombreCliente, nombreSeguido);
+    }
+
+    public Set<String> obtenerSeguidos(String nombre) { // O(grado)
+        return clientesTDA.obtenerSeguidos(nombre);
+    }
+
+    public int calcularDistanciaSeguimiento(String origen, String destino) { // O(Vert+Arist)
+        return clientesTDA.calcularDistanciaSeguimiento(origen, destino);
+    }
+
+    // --- amistades (requieren solicitud y aceptación) ---
+
+    public void agregarAmistad(String a, String b) { // O(grado)
+        clientesTDA.agregarAmistad(a, b);
+    }
+
+    public void eliminarAmistad(String a, String b) { // O(grado)
+        clientesTDA.eliminarAmistad(a, b);
+    }
+
+    public Set<String> obtenerVecinos(String nombre) { // O(grado)
+        return clientesTDA.obtenerVecinos(nombre);
+    }
+
+    public int calcularDistanciaAmistad(String origen, String destino) { // O(Vert+Arist)
+        return clientesTDA.calcularDistanciaAmistad(origen, destino);
+    }
+
+    public List<Integer> consultarConexionesNivel4(String nombre) { // O(Vert+Arist+Vert·log Vert)
         return clientesTDA.consultarConexionesNivel4(nombre);
     }
 }

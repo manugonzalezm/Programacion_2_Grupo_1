@@ -7,15 +7,15 @@ public class DynamicConjuntoTDA<T> implements ConjuntoTDA<T> {
 
     Nodo<T> c;
 
-    public void InicializarConjunto() {
+    public void InicializarConjunto() { // O(1)
         c = null;
     }
 
-    public boolean ConjuntoVacio() {
+    public boolean ConjuntoVacio() { // O(1)
         return (c == null);
     }
 
-    public void Agregar(T x) {
+    public void Agregar(T x) { // O(n) — llama a Pertenece antes de insertar
         if (!this.Pertenece(x)) {
             Nodo<T> aux = new Nodo<>();
             aux.info = x;
@@ -24,11 +24,11 @@ public class DynamicConjuntoTDA<T> implements ConjuntoTDA<T> {
         }
     }
 
-    public T Elegir() {
+    public T Elegir() { // O(1)
         return c.info;
     }
 
-    public void Sacar(T x) {
+    public void Sacar(T x) { // O(n)
         if (c != null) {
             if (c.info.equals(x)) {
                 c = c.sig;
@@ -44,7 +44,7 @@ public class DynamicConjuntoTDA<T> implements ConjuntoTDA<T> {
         }
     }
 
-    public boolean Pertenece(T x) {
+    public boolean Pertenece(T x) { // O(n)
         Nodo<T> aux = c;
 
         while ((aux != null) && (!aux.info.equals(x))) {

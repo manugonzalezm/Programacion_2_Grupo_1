@@ -2,7 +2,6 @@ package ar.edu.uade.redsocial.services;
 
 import ar.edu.uade.redsocial.model.Accion;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;

@@ -7,8 +7,8 @@ import ar.edu.uade.redsocial.tda.SolicitudesSeguimientoTDA;
 import java.util.List;
 
 /**
- * Servicio de cola de solicitudes de seguimiento. Delega en SolicitudesSeguimientoTDA (ColaTDA)
- * para FIFO O(1); mantiene la misma API pública.
+ * Maneja la cola de solicitudes de amistad pendientes.
+ * Las solicitudes se procesan en orden de llegada (FIFO).
  */
 public class ColaSolicitudesSeguimiento {
 
@@ -30,7 +30,7 @@ public class ColaSolicitudesSeguimiento {
         return solicitudesTDA.haySolicitudes();
     }
 
-    /** Quita una solicitud de la cola. Usado al deshacer "Seguir cliente". */
+    /** Quita una solicitud de la cola. Usado al deshacer "Enviar solicitud amistad". */
     public boolean quitarSolicitud(SolicitudSeguimiento solicitud) { // complejidad O(n), n = solicitudes en cola
         return solicitudesTDA.quitarSolicitud(solicitud);
     }

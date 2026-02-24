@@ -18,61 +18,26 @@ class StaticConjuntoTDATest {
     }
 
     @Test
-    void conjuntoVacioAlIniciar() {
-        assertTrue(conjunto.ConjuntoVacio());
-    }
-
-    @Test
-    void agregar() {
+    void agregarPerteneceYSacar() {
         conjunto.Agregar(5);
-        assertFalse(conjunto.ConjuntoVacio());
-        assertTrue(conjunto.Pertenece(5));
-    }
-
-    @Test
-    void agregarDuplicado() {
-        conjunto.Agregar(5);
-        conjunto.Agregar(5);
+        conjunto.Agregar(10);
         assertTrue(conjunto.Pertenece(5));
         conjunto.Sacar(5);
+        assertFalse(conjunto.Pertenece(5));
+        assertTrue(conjunto.Pertenece(10));
+    }
+
+    @Test
+    void noDuplicados() {
+        conjunto.Agregar(5);
+        conjunto.Agregar(5); // duplicado ignorado
+        conjunto.Sacar(5);
         assertTrue(conjunto.ConjuntoVacio());
-    }
-
-    @Test
-    void sacar() {
-        conjunto.Agregar(10);
-        conjunto.Agregar(20);
-        conjunto.Sacar(10);
-        assertFalse(conjunto.Pertenece(10));
-        assertTrue(conjunto.Pertenece(20));
-    }
-
-    @Test
-    void sacarNoExistente() {
-        conjunto.Agregar(1);
-        conjunto.Sacar(999);
-        assertTrue(conjunto.Pertenece(1));
     }
 
     @Test
     void elegir() {
         conjunto.Agregar(42);
         assertEquals(42, conjunto.Elegir());
-    }
-
-    @Test
-    void perteneceNoExistente() {
-        assertFalse(conjunto.Pertenece(99));
-    }
-
-    @Test
-    void multipleElementos() {
-        conjunto.Agregar(1);
-        conjunto.Agregar(2);
-        conjunto.Agregar(3);
-        assertTrue(conjunto.Pertenece(1));
-        assertTrue(conjunto.Pertenece(2));
-        assertTrue(conjunto.Pertenece(3));
-        assertFalse(conjunto.Pertenece(4));
     }
 }

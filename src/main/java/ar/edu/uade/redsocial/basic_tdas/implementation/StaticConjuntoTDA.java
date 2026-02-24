@@ -4,11 +4,13 @@ import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 
 public class StaticConjuntoTDA<T> implements ConjuntoTDA<T> {
 
+    private static final int CAPACIDAD = 1_100_000;
+
     Object[] a;
     int cant;
 
     public void InicializarConjunto() { // complejidad O(1)
-        a = new Object[100];
+        a = new Object[CAPACIDAD];
         cant = 0;
     }
 

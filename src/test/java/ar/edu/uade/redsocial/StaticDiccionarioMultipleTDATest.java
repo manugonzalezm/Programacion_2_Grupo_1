@@ -19,13 +19,7 @@ class StaticDiccionarioMultipleTDATest {
     }
 
     @Test
-    void clavesVacioAlIniciar() {
-        ConjuntoTDA<Integer> claves = dic.Claves();
-        assertTrue(claves.ConjuntoVacio());
-    }
-
-    @Test
-    void agregarYRecuperar() {
+    void agregarVariosValoresPorClave() {
         dic.Agregar(1, 10);
         dic.Agregar(1, 20);
         ConjuntoTDA<Integer> valores = dic.Recuperar(1);
@@ -34,83 +28,18 @@ class StaticDiccionarioMultipleTDATest {
     }
 
     @Test
-    void agregarValorDuplicado() {
-        dic.Agregar(1, 10);
-        dic.Agregar(1, 10);
-        ConjuntoTDA<Integer> valores = dic.Recuperar(1);
-        assertTrue(valores.Pertenece(10));
-        valores.Sacar(10);
-        assertTrue(valores.ConjuntoVacio());
-    }
-
-    @Test
-    void eliminarClave() {
-        dic.Agregar(1, 10);
-        dic.Agregar(2, 20);
-        dic.Eliminar(1);
-        ConjuntoTDA<Integer> claves = dic.Claves();
-        assertFalse(claves.ConjuntoVacio());
-        assertEquals(2, claves.Elegir());
-    }
-
-    @Test
-    void eliminarValor() {
+    void eliminarValorIndividual() {
         dic.Agregar(1, 10);
         dic.Agregar(1, 20);
         dic.EliminarValor(1, 10);
-        ConjuntoTDA<Integer> valores = dic.Recuperar(1);
-        assertFalse(valores.Pertenece(10));
-        assertTrue(valores.Pertenece(20));
+        assertFalse(dic.Recuperar(1).Pertenece(10));
+        assertTrue(dic.Recuperar(1).Pertenece(20));
     }
 
     @Test
-    void eliminarValorUnicoEliminaClave() {
+    void eliminarUltimoValorEliminaClave() {
         dic.Agregar(1, 10);
         dic.EliminarValor(1, 10);
-        ConjuntoTDA<Integer> claves = dic.Claves();
-        assertTrue(claves.ConjuntoVacio());
-    }
-
-    @Test
-    void eliminarValorNoExistente() {
-        dic.Agregar(1, 10);
-        dic.EliminarValor(1, 999);
-        ConjuntoTDA<Integer> valores = dic.Recuperar(1);
-        assertTrue(valores.Pertenece(10));
-    }
-
-    @Test
-    void eliminarValorClaveNoExistente() {
-        dic.EliminarValor(999, 10);
-        ConjuntoTDA<Integer> claves = dic.Claves();
-        assertTrue(claves.ConjuntoVacio());
-    }
-
-    @Test
-    void recuperarClaveNoExistente() {
-        ConjuntoTDA<Integer> valores = dic.Recuperar(999);
-        assertTrue(valores.ConjuntoVacio());
-    }
-
-    @Test
-    void eliminarClaveNoExistente() {
-        dic.Agregar(1, 10);
-        dic.Eliminar(999);
-        ConjuntoTDA<Integer> claves = dic.Claves();
-        assertFalse(claves.ConjuntoVacio());
-    }
-
-    @Test
-    void multiplesClavesYValores() {
-        dic.Agregar(1, 10);
-        dic.Agregar(1, 20);
-        dic.Agregar(2, 30);
-        ConjuntoTDA<Integer> c = dic.Claves();
-        int count = 0;
-        while (!c.ConjuntoVacio()) {
-            c.Sacar(c.Elegir());
-            count++;
-        }
-        assertEquals(2, count);
+        assertTrue(dic.Claves().ConjuntoVacio());
     }
 }

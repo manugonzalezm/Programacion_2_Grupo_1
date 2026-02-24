@@ -5,15 +5,18 @@ import ar.edu.uade.redsocial.basic_tdas.tda.DiccionarioMultipleTDA;
 
 public class StaticDiccionarioMultipleTDA<K, V> implements DiccionarioMultipleTDA<K, V> {
 
+    private static final int CAPACIDAD_CLAVES  = 1_100_000;
+    private static final int CAPACIDAD_VALORES = 100;     // valores por clave (no cambia en escala)
+
     Object[] claves;
     Object[][] valores;
     int[] cantValores;
     int cantClaves;
 
     public void InicializarDiccionario() { // complejidad O(1)
-        claves = new Object[100];
-        valores = new Object[100][100];
-        cantValores = new int[100];
+        claves = new Object[CAPACIDAD_CLAVES];
+        valores = new Object[CAPACIDAD_CLAVES][CAPACIDAD_VALORES];
+        cantValores = new int[CAPACIDAD_CLAVES];
         cantClaves = 0;
     }
 

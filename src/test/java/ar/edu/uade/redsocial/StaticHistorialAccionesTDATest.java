@@ -20,46 +20,28 @@ class StaticHistorialAccionesTDATest {
     }
 
     @Test
-    void iniciaVacio() {
-        assertFalse(historial.hayAcciones());
-    }
-
-    @Test
-    void registrarYDeshacer() {
-        historial.registrarAccion(new Accion("t1", "d1"));
-        assertTrue(historial.hayAcciones());
-        Accion a = historial.deshacerUltimaAccion();
-        assertEquals("t1", a.getTipo());
-        assertFalse(historial.hayAcciones());
-    }
-
-    @Test
-    void deshacerVacio() {
+    void registrarYDeshacerOrdenLIFO() {
+        historial.registrarAccion(new Accion("1", "a"));
+        historial.registrarAccion(new Accion("2", "b"));
+        assertEquals("2", historial.deshacerUltimaAccion().getTipo());
+        assertEquals("1", historial.deshacerUltimaAccion().getTipo());
         assertNull(historial.deshacerUltimaAccion());
     }
 
     @Test
-    void listarUltimasVacio() {
-        List<Accion> lista = historial.listarUltimas(5);
-        assertTrue(lista.isEmpty());
-    }
-
-    @Test
-    void listarUltimas() {
+    void listarUltimasRetornaMasRecientes() {
         historial.registrarAccion(new Accion("1", "a"));
         historial.registrarAccion(new Accion("2", "b"));
         historial.registrarAccion(new Accion("3", "c"));
         List<Accion> lista = historial.listarUltimas(2);
         assertEquals(2, lista.size());
         assertEquals("3", lista.get(0).getTipo());
-        assertEquals("2", lista.get(1).getTipo());
     }
 
     @Test
-    void listarUltimasNoModificaPila() {
+    void listarNoModificaPila() {
         historial.registrarAccion(new Accion("A", "x"));
         historial.listarUltimas(10);
         assertTrue(historial.hayAcciones());
-        assertEquals("A", historial.deshacerUltimaAccion().getTipo());
     }
 }

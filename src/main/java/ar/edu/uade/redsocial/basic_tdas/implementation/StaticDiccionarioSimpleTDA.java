@@ -5,14 +5,16 @@ import ar.edu.uade.redsocial.basic_tdas.tda.DiccionarioSimpleTDA;
 
 public class StaticDiccionarioSimpleTDA<K, V> implements DiccionarioSimpleTDA<K, V> {
 
+    private static final int CAPACIDAD = 1_100_000;
+
     Object[] claves;
     Object[] valores;
     int cant;
 
     public void InicializarDiccionario() { // complejidad O(1)
         cant = 0;
-        claves = new Object[100];
-        valores = new Object[100];
+        claves = new Object[CAPACIDAD];
+        valores = new Object[CAPACIDAD];
     }
 
     public void Agregar(K clave, V valor) { // complejidad O(n)

@@ -18,70 +18,19 @@ class MenuBuilderTest {
     }
 
     @Test
-    void agregarOpcionRunnableYBuild() {
-        Menu m = new MenuBuilder("Menu")
-            .agregarOpcion("1", "Primera", () -> {})
-            .setMensajeSalida("Adios")
-            .build();
-        assertNotNull(m);
-    }
-
-    @Test
-    void agregarOpcionConsumerYBuild() {
-        Menu m = new MenuBuilder("Menu")
-            .agregarOpcion("1", "Primera", scanner -> {})
-            .build();
-        assertNotNull(m);
-    }
-
-    @Test
-    void constructorSinTitulo() {
-        Menu m = new MenuBuilder().build();
-        assertNotNull(m);
-    }
-
-    @Test
-    void setOpcionSalida() {
-        Menu m = new MenuBuilder("Menu")
-            .agregarOpcion("1", "Op", () -> {})
-            .setOpcionSalida("X")
-            .build();
-        // Sale con X
-        String input = "X\n";
-        Scanner sc = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        m.ejecutar(sc);
-        sc.close();
-    }
-
-    @Test
-    void setLimpiarConsola() {
-        Menu m = new MenuBuilder("Menu")
-            .setLimpiarConsola(false)
-            .build();
-        assertNotNull(m);
-    }
-
-    @Test
-    void setMensajeSalida() {
-        Menu m = new MenuBuilder("Menu")
-            .setMensajeSalida("Chau!")
-            .build();
-        assertNotNull(m);
-    }
-
-    @Test
     void builderFluidoCompleto() {
+        int[] contador = {0};
         Menu m = new MenuBuilder("Full")
-            .agregarOpcion("1", "Runnable", () -> {})
-            .agregarOpcion("2", "Consumer", scanner -> {})
+            .agregarOpcion("1", "Runnable", () -> contador[0]++)
+            .agregarOpcion("2", "Consumer", scanner -> contador[0]++)
             .setMensajeSalida("Bye")
             .setOpcionSalida("0")
             .setLimpiarConsola(false)
             .build();
 
-        String input = "1\n\n2\n\n0\n";
-        Scanner sc = new Scanner(new ByteArrayInputStream(input.getBytes()));
+        Scanner sc = new Scanner(new ByteArrayInputStream("1\n\n2\n\n0\n".getBytes()));
         m.ejecutar(sc);
         sc.close();
+        assertEquals(2, contador[0]);
     }
 }

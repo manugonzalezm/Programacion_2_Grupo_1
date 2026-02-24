@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementación del historial de acciones usando PilaTDA genérico (LIFO).
- * Gracias a los genéricos, almacena Accion directamente sin mapeo de índices.
+ * Historial de acciones del usuario (LIFO).
+ * Permite deshacer la última acción realizada.
  */
 public class StaticHistorialAccionesTDA implements HistorialAccionesTDA {
 

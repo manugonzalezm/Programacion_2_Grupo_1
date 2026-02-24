@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementación de la cola de solicitudes usando ColaTDA genérico (FIFO).
- * Gracias a los genéricos, almacena SolicitudSeguimiento directamente sin mapeo de índices.
+ * Cola de solicitudes de amistad pendientes (FIFO).
  */
 public class StaticSolicitudesSeguimientoTDA implements SolicitudesSeguimientoTDA {
 
