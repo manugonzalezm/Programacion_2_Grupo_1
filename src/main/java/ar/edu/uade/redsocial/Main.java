@@ -1,5 +1,7 @@
 package ar.edu.uade.redsocial;
 
+import ar.edu.uade.redsocial.model.Accion;
+import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 import ar.edu.uade.redsocial.services.CargadorClientesJson;
 import ar.edu.uade.redsocial.services.ColaSolicitudesSeguimiento;
 import ar.edu.uade.redsocial.services.GestorClientes;
@@ -10,7 +12,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) { 
         // Una sola instancia de cada servicio (todas respaldadas por TDAs: Cola, Pila, Diccionario)
         GestorClientes gestorClientes = new GestorClientes();
         HistorialAcciones historial = new HistorialAcciones();
