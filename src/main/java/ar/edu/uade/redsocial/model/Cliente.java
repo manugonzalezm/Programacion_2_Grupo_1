@@ -10,28 +10,24 @@ import java.util.List;
  * son gestionadas por GrafoDirigido (seguimiento) y GrafoNoDirigido (amistades)
  * dentro de StaticClientesTDA, evitando duplicación de datos.
  *
+ * Las solicitudes de amistad recibidas SÍ se almacenan aquí (por usuario),
+ * usando un ArrayList ordenado por llegada para acceso por índice en O(1).
+ *
  * Invariante de representación:
  * - nombre != null y no vacío.
  * - scoring >= 0.
- * - solicitudesPendientes != null (se expone como inmutable).
+ * - solicitudesRecibidas != null (se expone como inmutable).
  */
 public class Cliente {
 
     private final String nombre;
     private final int scoring;
-    private final List<String> solicitudesPendientes;
     private final List<Accion> acciones = new ArrayList<>();
+    private final List<SolicitudSeguimiento> solicitudesRecibidas = new ArrayList<>();
 
     public Cliente(String nombre, int scoring) {
-        this(nombre, scoring, new ArrayList<>());
-    }
-
-    public Cliente(String nombre, int scoring, List<String> solicitudesPendientes) {
         this.nombre = nombre;
         this.scoring = scoring;
-        this.solicitudesPendientes = solicitudesPendientes != null
-                ? new ArrayList<>(solicitudesPendientes)
-                : new ArrayList<>();
     }
 
     public String getNombre() {
@@ -42,8 +38,32 @@ public class Cliente {
         return scoring;
     }
 
-    public List<String> getSolicitudesPendientes() {
-        return Collections.unmodifiableList(solicitudesPendientes);
+    /** Vista inmutable de las solicitudes de amistad pendientes para este usuario. */
+    public List<SolicitudSeguimiento> getSolicitudesRecibidas() {
+        return Collections.unmodifiableList(solicitudesRecibidas);
+    }
+
+    /** Agrega una solicitud recibida al final de la lista. O(1) */
+    public void agregarSolicitudRecibida(SolicitudSeguimiento s) {
+        solicitudesRecibidas.add(s);
+    }
+
+    /**
+     * Elimina y devuelve la solicitud en la posición indicada (0-based).
+     * Devuelve null si el índice está fuera de rango. O(n) — ArrayList.remove(int)
+     */
+    public SolicitudSeguimiento eliminarSolicitudRecibidaPorIndice(int indice) {
+        if (indice < 0 || indice >= solicitudesRecibidas.size()) return null;
+        return solicitudesRecibidas.remove(indice);
+    }
+
+    /**
+     * Elimina la primera solicitud que coincide por origen y destino.
+     * Devuelve true si se encontró y eliminó. O(n)
+     */
+    public boolean eliminarSolicitudRecibida(SolicitudSeguimiento s) {
+        return solicitudesRecibidas.removeIf(
+                r -> r.getOrigen().equals(s.getOrigen()) && r.getDestino().equals(s.getDestino()));
     }
 
     public void agregarAccion(Accion accion) {

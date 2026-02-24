@@ -4,6 +4,7 @@ import ar.edu.uade.redsocial.EstructuraABB.ABB;
 import ar.edu.uade.redsocial.basic_tdas.implementation.GrafoLA;
 import ar.edu.uade.redsocial.basic_tdas.tda.ConjuntoTDA;
 import ar.edu.uade.redsocial.model.Cliente;
+import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 import ar.edu.uade.redsocial.tda.ClientesTDA;
 
 import java.util.*;
@@ -16,6 +17,11 @@ import java.util.*;
  *  - TreeMap por scoring → búsqueda ordenada O(log n)
  *  - GrafoLA dirigido    → seguimiento (A sigue a B sin aprobación)
  *  - GrafoLA no dirigido → amistades (requieren solicitud y aceptación)
+ *
+ * Las solicitudes de amistad se almacenan directamente en el objeto Cliente
+ * receptor (List<SolicitudSeguimiento>), no en una cola global. Esto permite:
+ *  - Acceso por índice en O(1)
+ *  - Operaciones acotadas al volumen del usuario, no del sistema
  *
  * Los grafos trabajan con IDs enteros, así que se mantiene un mapeo
  * interno entre nombres y números para poder traducir entre ambos.
@@ -44,13 +50,11 @@ public class StaticClientesTDA implements ClientesTDA {
         grafoNoDirigido.InicializarGrafo();
     }
 
-    // busca el id de un cliente, devuelve -1 si no existe
     private int idDe(String nombre) {
         Integer id = nombreAId.get(nombre);
         return (id != null) ? id : -1;
     }
 
-    // convierte un conjunto de IDs en un set de nombres (vacía el conjunto)
     private Set<String> idsANombres(ConjuntoTDA<Integer> ids) {
         Set<String> result = new HashSet<>();
         while (!ids.ConjuntoVacio()) {
@@ -131,12 +135,9 @@ public class StaticClientesTDA implements ClientesTDA {
         grafoDirigido.EliminarVertice(id);
         grafoNoDirigido.EliminarVertice(id);
 
-        for (String key : new ArrayList<>(clientesPorNombre.keySet())) {
-            Cliente c = clientesPorNombre.get(key);
-            List<String> solicitudes = new ArrayList<>(c.getSolicitudesPendientes());
-            if (solicitudes.remove(nombre)) {
-                clientesPorNombre.put(key, new Cliente(c.getNombre(), c.getScoring(), solicitudes));
-            }
+        // limpiar solicitudes pendientes donde el cliente eliminado sea el emisor
+        for (Cliente c : clientesPorNombre.values()) {
+            c.eliminarSolicitudRecibida(new SolicitudSeguimiento(nombre, c.getNombre()));
         }
         return true;
     }
@@ -227,6 +228,61 @@ public class StaticClientesTDA implements ClientesTDA {
         return bfs(grafoNoDirigido, idO, idD);
     }
 
+    // --- solicitudes de amistad (por usuario) ---
+
+    @Override
+    public boolean enviarSolicitudAmistad(String emisor, String receptor) { // O(n_solicitudes_receptor)
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        if (clienteReceptor == null) return false;
+        if (!clientesPorNombre.containsKey(emisor)) return false;
+        if (emisor.equals(receptor)) return false;
+
+        for (SolicitudSeguimiento s : clienteReceptor.getSolicitudesRecibidas()) {
+            if (s.getOrigen().equals(emisor)) return false; // ya existe
+        }
+
+        clienteReceptor.agregarSolicitudRecibida(new SolicitudSeguimiento(emisor, receptor));
+        return true;
+    }
+
+    @Override
+    public List<SolicitudSeguimiento> listarSolicitudesRecibidas(String nombre) { // O(1)
+        Cliente c = clientesPorNombre.get(nombre);
+        if (c == null) return new ArrayList<>();
+        return new ArrayList<>(c.getSolicitudesRecibidas());
+    }
+
+    @Override
+    public boolean aceptarSolicitudAmistad(String receptor, int indice) { // O(grado)
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        if (clienteReceptor == null) return false;
+
+        SolicitudSeguimiento s = clienteReceptor.eliminarSolicitudRecibidaPorIndice(indice);
+        if (s == null) return false;
+
+        int idReceptor = idDe(receptor);
+        int idEmisor   = idDe(s.getOrigen());
+        if (idEmisor == -1) return false;
+
+        grafoNoDirigido.AgregarArista(idReceptor, idEmisor, 1);
+        grafoNoDirigido.AgregarArista(idEmisor, idReceptor, 1);
+        return true;
+    }
+
+    @Override
+    public boolean rechazarSolicitudAmistad(String receptor, int indice) { // O(1)
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        if (clienteReceptor == null) return false;
+        return clienteReceptor.eliminarSolicitudRecibidaPorIndice(indice) != null;
+    }
+
+    @Override
+    public boolean revocarSolicitudAmistad(String emisor, String receptor) { // O(n_solicitudes_receptor)
+        Cliente clienteReceptor = clientesPorNombre.get(receptor);
+        if (clienteReceptor == null) return false;
+        return clienteReceptor.eliminarSolicitudRecibida(new SolicitudSeguimiento(emisor, receptor));
+    }
+
     // --- ABB de conexiones ---
 
     @Override
@@ -292,38 +348,4 @@ public class StaticClientesTDA implements ClientesTDA {
         }
         return -1;
     }
-
-    // --- solicitudes de amistad ---
-
-    public boolean enviarSolicitud(String emisor, String receptor) {
-        Cliente clienteReceptor = clientesPorNombre.get(receptor);
-        if (clienteReceptor == null) return false;
-        if (emisor.equals(receptor)) return false;
-        if (clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
-
-        List<String> nuevas = new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
-        nuevas.add(emisor);
-        clientesPorNombre.put(receptor,
-                new Cliente(clienteReceptor.getNombre(), clienteReceptor.getScoring(), nuevas));
-        return true;
-    }
-
-    public boolean aceptarSolicitudAmistad(String receptor, String emisor) {
-        Cliente clienteReceptor = clientesPorNombre.get(receptor);
-        Cliente clienteEmisor   = clientesPorNombre.get(emisor);
-        if (clienteReceptor == null || clienteEmisor == null) return false;
-        if (!clienteReceptor.getSolicitudesPendientes().contains(emisor)) return false;
-
-        List<String> nuevas = new ArrayList<>(clienteReceptor.getSolicitudesPendientes());
-        nuevas.remove(emisor);
-        clientesPorNombre.put(receptor,
-                new Cliente(clienteReceptor.getNombre(), clienteReceptor.getScoring(), nuevas));
-
-        int idReceptor = idDe(receptor);
-        int idEmisor   = idDe(emisor);
-        grafoNoDirigido.AgregarArista(idReceptor, idEmisor, 1);
-        grafoNoDirigido.AgregarArista(idEmisor, idReceptor, 1);
-        return true;
-    }
-
 }

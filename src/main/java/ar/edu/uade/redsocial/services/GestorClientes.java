@@ -2,6 +2,7 @@ package ar.edu.uade.redsocial.services;
 
 import ar.edu.uade.redsocial.implementation.StaticClientesTDA;
 import ar.edu.uade.redsocial.model.Cliente;
+import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 
 import java.util.List;
 import java.util.Set;
@@ -10,6 +11,9 @@ import java.util.Set;
  * Servicio que expone las operaciones sobre clientes.
  * Internamente delega todo en StaticClientesTDA, que combina
  * un HashMap, un TreeMap y dos grafos (dirigido y no dirigido).
+ *
+ * Las solicitudes de amistad son per-usuario (List<SolicitudSeguimiento>
+ * dentro de cada Cliente), no en una cola global.
  */
 public class GestorClientes {
 
@@ -85,5 +89,35 @@ public class GestorClientes {
 
     public List<Integer> consultarConexionesNivel4(String nombre) { // O(Vert+Arist+Vert·log Vert)
         return clientesTDA.consultarConexionesNivel4(nombre);
+    }
+
+    // --- solicitudes de amistad (por usuario) ---
+
+    /** Envía una solicitud de amistad al receptor. O(n_solicitudes_receptor) */
+    public boolean enviarSolicitudAmistad(String emisor, String receptor) {
+        return clientesTDA.enviarSolicitudAmistad(emisor, receptor);
+    }
+
+    /** Devuelve las solicitudes recibidas por el usuario, ordenadas por llegada. O(1) */
+    public List<SolicitudSeguimiento> listarSolicitudesRecibidas(String nombre) {
+        return clientesTDA.listarSolicitudesRecibidas(nombre);
+    }
+
+    /**
+     * Acepta la solicitud en la posición indice (0-based) del receptor,
+     * creando la amistad bidireccional. O(grado)
+     */
+    public boolean aceptarSolicitudAmistad(String receptor, int indice) {
+        return clientesTDA.aceptarSolicitudAmistad(receptor, indice);
+    }
+
+    /** Rechaza la solicitud en la posición indice (0-based). O(1) */
+    public boolean rechazarSolicitudAmistad(String receptor, int indice) {
+        return clientesTDA.rechazarSolicitudAmistad(receptor, indice);
+    }
+
+    /** Revoca una solicitud enviada. Usado para deshacer "Enviar solicitud amistad". O(n_solicitudes_receptor) */
+    public boolean revocarSolicitudAmistad(String emisor, String receptor) {
+        return clientesTDA.revocarSolicitudAmistad(emisor, receptor);
     }
 }

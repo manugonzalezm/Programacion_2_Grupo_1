@@ -1,6 +1,7 @@
 package ar.edu.uade.redsocial.tda;
 
 import ar.edu.uade.redsocial.model.Cliente;
+import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
 
 import java.util.List;
 import java.util.Set;
@@ -9,6 +10,10 @@ import java.util.Set;
  * Define las operaciones disponibles sobre el conjunto de clientes.
  * Maneja datos básicos (nombre, scoring) y dos tipos de relaciones:
  * seguimiento directo y amistades (estas últimas con solicitud previa).
+ *
+ * Las solicitudes de amistad se almacenan por usuario (no en una cola global),
+ * lo que permite acceso por índice en O(1) y operaciones acotadas al volumen
+ * del usuario receptor en lugar del volumen global del sistema.
  */
 public interface ClientesTDA {
 
@@ -53,6 +58,40 @@ public interface ClientesTDA {
 
     /** Distancia en saltos entre dos clientes por amistad (BFS). */
     int calcularDistanciaAmistad(String origen, String destino); // O(Vert + Arist)
+
+    // --- solicitudes de amistad (por usuario) ---
+
+    /**
+     * Encola una solicitud de amistad en la lista del receptor.
+     * Retorna false si alguno no existe, son el mismo usuario, o ya existe la solicitud.
+     */
+    boolean enviarSolicitudAmistad(String emisor, String receptor); // O(n_solicitudes_receptor)
+
+    /**
+     * Devuelve las solicitudes de amistad recibidas por el usuario, ordenadas por llegada.
+     * Lista vacía si el usuario no existe.
+     */
+    List<SolicitudSeguimiento> listarSolicitudesRecibidas(String nombre); // O(1)
+
+    /**
+     * Acepta la solicitud en la posición indice (0-based) de la lista del receptor,
+     * crea la amistad bidireccional y la elimina de la lista.
+     * Retorna false si el índice es inválido o el usuario no existe.
+     */
+    boolean aceptarSolicitudAmistad(String receptor, int indice); // O(grado)
+
+    /**
+     * Rechaza (elimina sin crear amistad) la solicitud en la posición indice (0-based).
+     * Retorna false si el índice es inválido o el usuario no existe.
+     */
+    boolean rechazarSolicitudAmistad(String receptor, int indice); // O(1)
+
+    /**
+     * Revoca (cancela) una solicitud enviada por emisor a receptor.
+     * Usado para deshacer "Enviar solicitud amistad".
+     * Retorna false si no existía esa solicitud.
+     */
+    boolean revocarSolicitudAmistad(String emisor, String receptor); // O(n_solicitudes_receptor)
 
     // --- ABB de conexiones ---
 

@@ -1,8 +1,6 @@
 package ar.edu.uade.redsocial;
 
 import ar.edu.uade.redsocial.model.Cliente;
-import ar.edu.uade.redsocial.model.SolicitudSeguimiento;
-import ar.edu.uade.redsocial.services.ColaSolicitudesSeguimiento;
 import ar.edu.uade.redsocial.services.GestorClientes;
 import ar.edu.uade.redsocial.services.HistorialAcciones;
 import ar.edu.uade.redsocial.utils.MenuRedSocial;
@@ -15,10 +13,10 @@ import java.util.Scanner;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * MENÚ SIN SESIÓN (opciones 1-10, salir=0):
+ * MENÚ SIN SESIÓN (opciones 1-9, salir=0):
  *   1-Iniciar Sesion | 2-Buscar por nombre | 3-Buscar por puntuacion
- *   4-Registrarse | 5-Solicitudes de amistad | 6-Últimas acciones
- *   7-Ver todos los usuarios | 8-Explorar red | 9-Ver seguidos/amigos | 10-Distancia
+ *   4-Registrarse | 5-Últimas acciones | 6-Ver todos los usuarios
+ *   7-Explorar red | 8-Ver seguidos/amigos | 9-Distancia
  *
  * MENÚ CON SESIÓN (opciones 1-16, salir=0):
  *   1-Buscar nombre | 2-Buscar puntuacion | 3-Seguir | 4-Dejar de seguir
@@ -31,13 +29,11 @@ class MenuRedSocialTest {
 
     private GestorClientes gestor;
     private HistorialAcciones historial;
-    private ColaSolicitudesSeguimiento cola;
 
     @BeforeEach
     void setUp() {
         gestor = new GestorClientes();
         historial = new HistorialAcciones();
-        cola = new ColaSolicitudesSeguimiento();
         gestor.agregarCliente(new Cliente("Alice", 95));
         gestor.agregarCliente(new Cliente("Bob", 88));
         gestor.agregarCliente(new Cliente("Charlie", 72));
@@ -45,14 +41,14 @@ class MenuRedSocialTest {
 
     private void ejecutarMenuSinLogin(String input) {
         Scanner scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestor, historial, cola);
+        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestor, historial);
         menuRedSocial.crearMenuSinLogin().ejecutar(scanner);
         scanner.close();
     }
 
     private void ejecutarMenuConLogin(String input, String nombreUsuario) {
         Scanner scanner = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestor, historial, cola);
+        MenuRedSocial menuRedSocial = new MenuRedSocial(scanner, gestor, historial);
         menuRedSocial.setUsuarioLogueado(gestor.buscarPorNombre(nombreUsuario));
         menuRedSocial.crearMenuConLogin().ejecutar(scanner);
         scanner.close();
@@ -75,7 +71,6 @@ class MenuRedSocialTest {
     @Test
     void seguirClienteDirecto() {
         ejecutarMenuConLogin("3\nBob\n\n0\n", "Alice");
-        assertFalse(cola.haySolicitudes()); // no usa cola, es directo
         assertTrue(gestor.obtenerSeguidos("Alice").contains("Bob"));
     }
 
@@ -88,13 +83,15 @@ class MenuRedSocialTest {
     @Test
     void enviarSolicitudAmistad() {
         ejecutarMenuConLogin("5\nBob\n\n0\n", "Alice");
-        assertTrue(cola.haySolicitudes());
+        // la solicitud queda en la lista de Bob, no en una cola global
+        assertEquals(1, gestor.listarSolicitudesRecibidas("Bob").size());
+        assertEquals("Alice", gestor.listarSolicitudesRecibidas("Bob").get(0).getOrigen());
         assertEquals("Enviar solicitud amistad", historial.deshacerUltimaAccion().getTipo());
     }
 
     @Test
     void aceptarSolicitudAmistadCreaAmistad() {
-        cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
+        gestor.enviarSolicitudAmistad("Alice", "Bob");
         ejecutarMenuConLogin("6\n1\n\n0\n", "Bob");
         assertTrue(gestor.obtenerVecinos("Alice").contains("Bob"));
         assertTrue(gestor.obtenerVecinos("Bob").contains("Alice"));
@@ -103,15 +100,15 @@ class MenuRedSocialTest {
 
     @Test
     void rechazarSolicitudAmistad() {
-        cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
+        gestor.enviarSolicitudAmistad("Alice", "Bob");
         ejecutarMenuConLogin("7\n1\n\n0\n", "Bob");
-        assertFalse(cola.haySolicitudes());
+        assertTrue(gestor.listarSolicitudesRecibidas("Bob").isEmpty());
         assertFalse(gestor.obtenerVecinos("Alice").contains("Bob"));
     }
 
     @Test
     void deshacerAceptarSolicitudAmistad() {
-        cola.agregarSolicitud(new SolicitudSeguimiento("Alice", "Bob"));
+        gestor.enviarSolicitudAmistad("Alice", "Bob");
         ejecutarMenuConLogin("6\n1\n\n8\n\n0\n", "Bob");
         assertFalse(gestor.obtenerVecinos("Alice").contains("Bob"));
         assertFalse(gestor.obtenerVecinos("Bob").contains("Alice"));
@@ -126,7 +123,7 @@ class MenuRedSocialTest {
     void flujoCompletoRegistroSeguimientoAmistad() {
         ejecutarMenuSinLogin("4\nDiana\n60\n\n0\n");
         ejecutarMenuConLogin("3\nBob\n\n0\n", "Alice");
-        ejecutarMenuConLogin("5\nBob\n\n0\n", "Alice");
+        gestor.enviarSolicitudAmistad("Alice", "Bob");
         ejecutarMenuConLogin("6\n1\n\n0\n", "Bob");
 
         assertNotNull(gestor.buscarPorNombre("Diana"));
