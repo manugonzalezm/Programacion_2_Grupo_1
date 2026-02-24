@@ -2,7 +2,9 @@ package ar.edu.uade.redsocial.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Representa a un cliente de la red social.
@@ -21,6 +23,16 @@ public class Cliente {
     private final int scoring;
     private final List<String> solicitudesPendientes;
     private final List<Accion> acciones = new ArrayList<>();
+    private Set<String> siguiendo = new HashSet<>();
+    private Set<String> conexiones = new HashSet<>();
+
+    public Set<String> getSiguiendo() {
+        return siguiendo;
+    }
+
+    public Set<String> getConexiones() {
+        return conexiones;
+    }
 
     public Cliente(String nombre, int scoring) {
         this(nombre, scoring, new ArrayList<>());

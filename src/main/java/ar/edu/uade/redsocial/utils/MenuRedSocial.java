@@ -13,9 +13,8 @@ import ar.edu.uade.redsocial.services.HistorialAcciones;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 
-public class MenuRedSocial {
+public class MenuRedSocial {   // O(1)
 
     private final GestorClientes gestorClientes;
     private final HistorialAcciones historial;
@@ -23,76 +22,80 @@ public class MenuRedSocial {
     private final Scanner scanner;
     private Cliente usuarioLogueado;
 
-    public MenuRedSocial(Scanner scanner, GestorClientes gestorClientes,
-                         HistorialAcciones historial, ColaSolicitudesSeguimiento colaSolicitudes) {
+    public MenuRedSocial(Scanner scanner, GestorClientes gestorClientes, HistorialAcciones historial, ColaSolicitudesSeguimiento colaSolicitudes) { // complejidad O(1)
         this.scanner = scanner;
         this.gestorClientes = gestorClientes;
         this.historial = historial;
         this.colaSolicitudes = colaSolicitudes;
     }
 
-    public void cargarDatosIniciales() {
+    /** Carga el JSON en el gestor recibido por constructor. */
+    public void cargarDatosIniciales() { // complejidad O(n)
         CargadorClientesJson.readFromFile(gestorClientes);
         System.out.println("Datos iniciales cargados correctamente.");
     }
 
-    public void setUsuarioLogueado(Cliente cliente) { this.usuarioLogueado = cliente; }
-    public Cliente getUsuarioLogueado() { return this.usuarioLogueado; }
+    // ─────────────────────────────────────────────────────────
+    //  MENÚ SIN SESIÓN: opciones 1-7, salir con 0
+    // ─────────────────────────────────────────────────────────
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  MENÚ SIN SESIÓN  (1-10, salir=0)
-    // ─────────────────────────────────────────────────────────────────────────
+    /** Permite asignar el usuario logueado (uso en tests). */
+    public void setUsuarioLogueado(Cliente cliente) {
+        this.usuarioLogueado = cliente;
+    }
+
+    public Cliente getUsuarioLogueado() {
+        return this.usuarioLogueado;
+    }
 
     public Menu crearMenuSinLogin() {
         return new MenuBuilder("🌐 RED SOCIAL EMPRESARIAL")
             .setEstadoHeader("[ 🔴 Sin sesion iniciada ]")
-            .agregarOpcion("1",  "🔑 Iniciar Sesion",                        scanner -> login())
-            .agregarOpcion("2",  "🔍 Buscar usuario por nombre",             scanner -> buscarClientePorNombre())
-            .agregarOpcion("3",  "📊 Buscar usuario por puntuacion",         scanner -> buscarClientePorScoring())
-            .agregarOpcion("4",  "📝 Registrarse",                           scanner -> agregarCliente())
-            .agregarOpcion("5",  "📋 Ver solicitudes de amistad pendientes", () -> listarSolicitudesPendientes())
-            .agregarOpcion("6",  "📜 Ultimas 10 acciones",                   () -> listarUltimasAcciones())
-            .agregarOpcion("7",  "👥 Ver todos los usuarios",                () -> listarTodosLosClientes())
-            .agregarOpcion("8",  "🌳 Explorar red de contactos",             scanner -> consultarRedConexiones())
-            .agregarOpcion("9",  "🤝 Ver seguidos y amigos de un usuario",   scanner -> verRelacionesUsuario())
-            .agregarOpcion("10", "📏 Distancia entre dos usuarios",          scanner -> calcularDistancia())
+            .agregarOpcion("1", "🔑 Iniciar Sesion",                   scanner -> login())
+            .agregarOpcion("2", "🔍 Buscar Cliente por nombre",        scanner -> buscarClientePorNombre())
+            .agregarOpcion("3", "📊 Buscar Cliente por Scoring",       scanner -> buscarClientePorScoring())
+            .agregarOpcion("4", "📝 Registrarse",                      scanner -> agregarCliente())
+            .agregarOpcion("5", "📋 Ver solicitudes pendientes",       () -> listarSolicitudesPendientes())
+            .agregarOpcion("6", "📜 Ultimas 10 acciones",              () -> listarUltimasAcciones())
+            .agregarOpcion("7", "👥 Ver todos los clientes",           () -> listarTodosLosClientes())
+            .agregarOpcion("8", "🌳 Explorar mi red de contactos", scanner -> consultarRedConexiones())
             .setOpcionSalida("0")
             .setMensajeSalida("👋 Saliendo del sistema...")
             .setLimpiarConsola(false)
             .build();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  MENÚ CON SESIÓN  (1-16, salir=0)
-    // ─────────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────
+    //  MENÚ CON SESIÓN: opciones 1-13, salir con 0
+    // ─────────────────────────────────────────────────────────
 
     public Menu crearMenuConLogin() {
         String nombre = usuarioLogueado.getNombre();
         return new MenuBuilder("🌐 RED SOCIAL EMPRESARIAL")
             .setEstadoHeader("[ 🟢 Sesion activa: " + nombre + " ]")
-            .agregarOpcion("1",  "🔍 Buscar usuario por nombre",             scanner -> buscarClientePorNombre())
-            .agregarOpcion("2",  "📊 Buscar usuario por puntuacion",         scanner -> buscarClientePorScoring())
-            .agregarOpcion("3",  "➕ Seguir a un usuario",                   scanner -> seguirCliente())
-            .agregarOpcion("4",  "➖ Dejar de seguir a un usuario",          scanner -> dejarDeSeguir())
-            .agregarOpcion("5",  "🤝 Enviar solicitud de amistad",           scanner -> enviarSolicitudAmistad())
-            .agregarOpcion("6",  "✅ Aceptar solicitud de amistad",          () -> aceptarSolicitudAmistad())
-            .agregarOpcion("7",  "❌ Rechazar solicitud de amistad",         () -> rechazarSolicitudAmistad())
-            .agregarOpcion("8",  "↩️  Deshacer ultima accion",               () -> deshacerUltimaAccion())
-            .agregarOpcion("9",  "📋 Mis solicitudes de amistad pendientes", () -> listarSolicitudesPendientes())
-            .agregarOpcion("10", "📜 Ultimas 10 acciones",                   () -> listarUltimasAcciones())
-            .agregarOpcion("11", "👥 Ver todos los usuarios",                () -> listarTodosLosClientes())
-            .agregarOpcion("12", "👤 Ver mis datos",                         () -> verMisDatos())
-            .agregarOpcion("13", "🌳 Explorar red de contactos",             scanner -> consultarRedConexiones())
-            .agregarOpcion("14", "🤝 Ver seguidos y amigos de un usuario",   scanner -> verRelacionesUsuario())
-            .agregarOpcion("15", "📏 Distancia entre dos usuarios",          scanner -> calcularDistancia())
-            .agregarOpcion("16", "🚪 Cerrar Sesion",                         scanner -> logout())
+            .agregarOpcion("1",  "🔍 Buscar Cliente por nombre",              scanner -> buscarClientePorNombre())
+            .agregarOpcion("2",  "📊 Buscar Cliente por Scoring",             scanner -> buscarClientePorScoring())
+            .agregarOpcion("3",  "➕ Seguir a un cliente",                    scanner -> seguirCliente())
+            .agregarOpcion("4",  "✅ Aceptar solicitud de seguimiento",       () -> aceptarSolicitudSeguimiento())
+            .agregarOpcion("5",  "❌ Rechazar solicitud de seguimiento",      () -> rechazarSolicitudSeguimiento())
+            .agregarOpcion("6",  "↩️  Deshacer ultima accion",                () -> deshacerUltimaAccion())
+            .agregarOpcion("7",  "📋 Mis solicitudes pendientes",             () -> listarSolicitudesPendientes())
+            .agregarOpcion("8",  "📜 Ultimas 10 acciones",                    () -> listarUltimasAcciones())
+            .agregarOpcion("9",  "👥 Ver todos los clientes",                () -> listarTodosLosClientes())
+            .agregarOpcion("10", "👤 Ver mis datos",                          () -> verMisDatos())
+            .agregarOpcion("11", "🌳 Explorar mi red de contactos",           scanner -> consultarRedConexiones())
+            .agregarOpcion("12", "🚪 Cerrar Sesion",                        scanner -> logout())
             .setOpcionSalida("0")
             .setMensajeSalida("👋 Saliendo del sistema...")
             .setLimpiarConsola(false)
             .build();
     }
 
-    public void ejecutar() {
+    /**
+     * Ejecuta el sistema. El bucle principal determina qué menú mostrar según el estado de sesión.
+     * Tras cada acción se re-evalúa (login/logout cambia el menú inmediatamente).
+     */
+    public void ejecutar() { // complejidad según uso
         boolean continuar = true;
         while (continuar) {
             Menu menu = (usuarioLogueado == null) ? crearMenuSinLogin() : crearMenuConLogin();
@@ -102,48 +105,52 @@ public class MenuRedSocial {
         exportarAccionesCsv();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  ACCIONES — sesión
-    // ─────────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────
+    //  ACCIONES DEL MENÚ
+    // ─────────────────────────────────────────────────────────
 
     private void login() {
         System.out.println("\n=== 🔑 Iniciar Sesion ===");
+
         if (usuarioLogueado != null) {
             System.out.println("⚠️  Ya tienes una sesion activa como: " + usuarioLogueado.getNombre());
             return;
         }
+
         String nombre = InputUtils.leerTextoNoVacio(scanner, "Ingrese su nombre: ");
         Cliente cliente = gestorClientes.buscarPorNombre(nombre);
+
         if (cliente != null) {
             usuarioLogueado = cliente;
             System.out.println("✅ Sesion iniciada como: " + nombre);
             historial.registrarAccion(new Accion("Login", nombre));
         } else {
-            System.out.println("❌ No existe un usuario con ese nombre.");
+            System.out.println("❌ No existe un cliente con ese nombre.");
         }
     }
 
     private void logout() {
         System.out.println("\n=== 🚪 Cerrar Sesion ===");
+
         historial.registrarAccion(new Accion("Logout", usuarioLogueado.getNombre()));
         System.out.println("✅ Sesion cerrada. Hasta luego, " + usuarioLogueado.getNombre() + "!");
         usuarioLogueado = null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  ACCIONES — búsqueda y registro
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void agregarCliente() {
+    private void agregarCliente() { // complejidad O(1)
         System.out.println("\n=== 📝 Registrarse ===");
         String nombre = InputUtils.leerTextoNoVacio(scanner, "Ingrese su nombre: ");
+
         if (gestorClientes.buscarPorNombre(nombre) != null) {
-            System.out.println("❌ Ya existe un usuario con el nombre: " + nombre);
+            System.out.println("❌ Ya existe un cliente con el nombre: " + nombre);
             return;
         }
-        int scoring = InputUtils.leerEnteroConReintentos(scanner, "Ingrese su puntuacion inicial: ");
+
+        int scoring = InputUtils.leerEnteroConReintentos(scanner, "Ingrese su scoring inicial: ");
         Cliente nuevoCliente = new Cliente(nombre, scoring);
-        if (gestorClientes.agregarCliente(nuevoCliente)) {
+        boolean agregado = gestorClientes.agregarCliente(nuevoCliente);
+
+        if (agregado) {
             System.out.println("✅ Registro exitoso: " + nuevoCliente);
             historial.registrarAccion(new Accion("Registrarse", nombre));
         } else {
@@ -151,337 +158,267 @@ public class MenuRedSocial {
         }
     }
 
-    private void buscarClientePorNombre() {
-        System.out.println("\n=== 🔍 Buscar usuario por nombre ===");
-        String nombre = InputUtils.leerTexto(scanner, "Ingrese el nombre: ");
+    private void buscarClientePorNombre() { // complejidad O(1)
+        System.out.println("\n=== 🔍 Buscar Cliente por nombre ===");
+        String nombre = InputUtils.leerTexto(scanner, "Ingrese el nombre del cliente: ");
         Cliente cliente = gestorClientes.buscarPorNombre(nombre);
+
         if (cliente != null) {
-            System.out.println("\n✅ Usuario encontrado: " + cliente);
-            Set<String> seguidos = gestorClientes.obtenerSeguidos(nombre);
-            Set<String> amigos   = gestorClientes.obtenerVecinos(nombre);
-            System.out.println("   Siguiendo  (" + seguidos.size() + "): " + (seguidos.isEmpty() ? "(nadie)" : seguidos));
-            System.out.println("   Amistades  (" + amigos.size()   + "): " + (amigos.isEmpty()   ? "(nadie)" : amigos));
+            System.out.println("\n✅ Cliente encontrado: " + cliente.toString());
             historial.registrarAccion(new Accion("Buscar por nombre", nombre));
         } else {
-            System.out.println("\n❌ No se encontro ningun usuario con el nombre: " + nombre);
+            System.out.println("\n❌ No se encontro ningun cliente con el nombre: " + nombre);
         }
     }
 
-    private void buscarClientePorScoring() {
-        System.out.println("\n=== 📊 Buscar usuario por puntuacion ===");
-        int scoring = InputUtils.leerEnteroConReintentos(scanner, "Ingrese la puntuacion: ");
+    private void buscarClientePorScoring() { // complejidad O(log n + k)
+        System.out.println("\n=== 📊 Buscar Cliente por Scoring ===");
+        int scoring = InputUtils.leerEnteroConReintentos(scanner, "Ingrese el scoring: ");
         List<Cliente> clientes = gestorClientes.buscarPorScoring(scoring);
+
         if (clientes.isEmpty()) {
-            System.out.println("\n❌ No se encontraron usuarios con puntuacion: " + scoring);
+            System.out.println("\n❌ No se encontraron clientes con scoring: " + scoring);
         } else {
-            System.out.println("\n✅ Usuarios con puntuacion " + scoring + ":");
-            for (Cliente c : clientes) System.out.println("  - " + c);
+            System.out.println("\n✅ Clientes encontrados con scoring " + scoring + ":");
+            for (Cliente cliente : clientes) {
+                System.out.println("  - " + cliente);
+            }
             historial.registrarAccion(new Accion("Buscar por scoring", String.valueOf(scoring)));
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  ACCIONES — seguimiento directo (sin aprobación)
-    // ─────────────────────────────────────────────────────────────────────────
-
     private void seguirCliente() {
-        System.out.println("\n=== ➕ Seguir a un usuario ===");
-        String seguido = InputUtils.leerTexto(scanner, "Ingrese el nombre del usuario a seguir: ");
+        System.out.println("\n=== ➕ Seguir a un cliente ===");
+        String seguido = InputUtils.leerTexto(scanner, "Ingrese el nombre del cliente a seguir: ");
+
         if (gestorClientes.buscarPorNombre(seguido) == null) {
-            System.out.println("❌ No existe ese usuario.");
+            System.out.println("❌ No existe ese cliente.");
             return;
         }
-        String yo = usuarioLogueado.getNombre();
-        if (yo.equals(seguido)) {
-            System.out.println("❌ No puedes seguirte a ti mismo.");
-            return;
-        }
-        boolean ok = gestorClientes.agregarSeguido(yo, seguido);
-        if (ok) {
-            System.out.println("✅ Ahora sigues a " + seguido + ".");
-            historial.registrarAccion(new Accion("Seguir", yo + " -> " + seguido));
-        } else {
-            System.out.println("⚠️  No se pudo seguir a " + seguido
-                    + " (ya lo sigues o alcanzaste el limite de seguidos).");
-        }
+
+        SolicitudSeguimiento solicitud = new SolicitudSeguimiento(usuarioLogueado.getNombre(), seguido);
+        colaSolicitudes.agregarSolicitud(solicitud);
+        historial.registrarAccion(new Accion("Seguir cliente", usuarioLogueado.getNombre() + " -> " + seguido));
+        System.out.println("✅ Solicitud enviada a " + seguido + ".");
     }
 
-    private void dejarDeSeguir() {
-        System.out.println("\n=== ➖ Dejar de seguir a un usuario ===");
-        String yo = usuarioLogueado.getNombre();
-        Set<String> seguidos = gestorClientes.obtenerSeguidos(yo);
-        if (seguidos.isEmpty()) {
-            System.out.println("📭 No sigues a nadie actualmente.");
-            return;
-        }
-        System.out.println("Usuarios que sigues: " + seguidos);
-        String objetivo = InputUtils.leerTexto(scanner, "Ingrese el nombre del usuario a dejar de seguir: ");
-        boolean ok = gestorClientes.quitarSeguido(yo, objetivo);
-        if (ok) {
-            System.out.println("✅ Dejaste de seguir a " + objetivo + ".");
-            historial.registrarAccion(new Accion("Dejar de seguir", yo + " -> " + objetivo));
-        } else {
-            System.out.println("⚠️  No seguias a ese usuario.");
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  ACCIONES — solicitudes de amistad (con aprobación)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void enviarSolicitudAmistad() {
-        System.out.println("\n=== 🤝 Enviar Solicitud de Amistad ===");
-        String destino = InputUtils.leerTexto(scanner, "Ingrese el nombre del usuario al que desea enviar la solicitud: ");
-        if (gestorClientes.buscarPorNombre(destino) == null) {
-            System.out.println("❌ No existe ese usuario.");
-            return;
-        }
-        String yo = usuarioLogueado.getNombre();
-        if (yo.equals(destino)) {
-            System.out.println("❌ No puedes enviarte una solicitud a ti mismo.");
-            return;
-        }
-        colaSolicitudes.agregarSolicitud(new SolicitudSeguimiento(yo, destino));
-        System.out.println("✅ Solicitud de amistad enviada a " + destino + ".");
-        historial.registrarAccion(new Accion("Enviar solicitud amistad", yo + " -> " + destino));
-    }
-
-    private void aceptarSolicitudAmistad() {
-        System.out.println("\n=== ✅ Aceptar Solicitud de Amistad ===");
+    /**
+     * Muestra las solicitudes pendientes para el usuario logueado y permite elegir una para aceptar.
+     * Aceptar aplica el seguimiento en el sistema.
+     */
+    private void aceptarSolicitudSeguimiento() { // complejidad O(n)
+        System.out.println("\n=== ✅ Aceptar Solicitud de Seguimiento ===");
         SolicitudSeguimiento solicitud = seleccionarSolicitudParaUsuario("aceptar");
         if (solicitud == null) return;
 
         boolean quitada = colaSolicitudes.quitarSolicitud(solicitud);
         if (quitada) {
-            gestorClientes.agregarAmistad(solicitud.getOrigen(), solicitud.getDestino());
-            System.out.println("✅ " + solicitud.getOrigen() + " y tu ahora son amigos.");
-            historial.registrarAccion(new Accion("Aceptar solicitud amistad",
-                    solicitud.getOrigen() + " <-> " + solicitud.getDestino()));
+            boolean aplicada = gestorClientes.agregarSeguido(solicitud.getOrigen(), solicitud.getDestino());
+            if (aplicada) {
+                System.out.println("✅ " + solicitud.getOrigen() + " ahora te sigue.");
+            } else {
+                System.out.println("⚠️  No se pudo aplicar el seguimiento (ya existia o datos invalidos).");
+            }
+            historial.registrarAccion(new Accion("Aceptar solicitud", solicitud.getOrigen() + " -> " + solicitud.getDestino()));
         }
     }
 
-    private void rechazarSolicitudAmistad() {
-        System.out.println("\n=== ❌ Rechazar Solicitud de Amistad ===");
+    /**
+     * Muestra las solicitudes pendientes para el usuario logueado y permite elegir una para rechazar.
+     * Rechazar elimina la solicitud de la cola sin aplicar el seguimiento.
+     */
+    private void rechazarSolicitudSeguimiento() { // complejidad O(n)
+        System.out.println("\n=== ❌ Rechazar Solicitud de Seguimiento ===");
         SolicitudSeguimiento solicitud = seleccionarSolicitudParaUsuario("rechazar");
         if (solicitud == null) return;
 
-        if (colaSolicitudes.quitarSolicitud(solicitud)) {
-            System.out.println("❌ Solicitud de amistad de " + solicitud.getOrigen() + " rechazada.");
-            historial.registrarAccion(new Accion("Rechazar solicitud amistad",
-                    solicitud.getOrigen() + " -> " + solicitud.getDestino()));
+        boolean quitada = colaSolicitudes.quitarSolicitud(solicitud);
+        if (quitada) {
+            System.out.println("❌ Solicitud de " + solicitud.getOrigen() + " rechazada.");
+            historial.registrarAccion(new Accion("Rechazar solicitud", solicitud.getOrigen() + " -> " + solicitud.getDestino()));
         }
     }
 
+    /**
+     * Muestra las solicitudes pendientes del usuario y pide que elija una.
+     * Retorna null si no hay solicitudes o el usuario cancela.
+     */
     private SolicitudSeguimiento seleccionarSolicitudParaUsuario(String verbo) {
         List<SolicitudSeguimiento> todas = colaSolicitudes.listarPendientes();
         List<SolicitudSeguimiento> pendientes = new ArrayList<>();
         for (SolicitudSeguimiento s : todas) {
-            if (s.getDestino().equals(usuarioLogueado.getNombre())) pendientes.add(s);
+            if (s.getDestino().equals(usuarioLogueado.getNombre())) {
+                pendientes.add(s);
+            }
         }
+
         if (pendientes.isEmpty()) {
-            System.out.println("📭 No tienes solicitudes de amistad pendientes.");
+            System.out.println("📭 No tienes solicitudes de seguimiento pendientes.");
             return null;
         }
-        System.out.println("Solicitudes de amistad para ti:");
+
+        System.out.println("Solicitudes pendientes para ti:");
         for (int i = 0; i < pendientes.size(); i++) {
-            System.out.println("  " + (i + 1) + ". 👤 " + pendientes.get(i).getOrigen() + " quiere ser tu amigo");
+            System.out.println("  " + (i + 1) + ". 👤 " + pendientes.get(i).getOrigen() + " quiere seguirte");
         }
+
         int numero = InputUtils.leerEnteroConReintentos(scanner,
-                "Selecciona el numero a " + verbo + " (0 para cancelar): ");
-        if (numero == 0) { System.out.println("Operacion cancelada."); return null; }
-        if (numero < 1 || numero > pendientes.size()) { System.out.println("❌ Numero invalido."); return null; }
+                "Selecciona el numero de solicitud a " + verbo + " (0 para cancelar): ");
+
+        if (numero == 0) {
+            System.out.println("Operacion cancelada.");
+            return null;
+        }
+        if (numero < 1 || numero > pendientes.size()) {
+            System.out.println("❌ Numero invalido.");
+            return null;
+        }
         return pendientes.get(numero - 1);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  ACCIONES — deshacer
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void deshacerUltimaAccion() {
+    private void deshacerUltimaAccion() { // complejidad O(1) o O(n) segun tipo
         System.out.println("\n=== ↩️ Deshacer Ultima Accion ===");
-        Accion accion = historial.deshacerUltimaAccion();
-        if (accion == null) { System.out.println("📭 No hay acciones para deshacer."); return; }
+        Accion accionDeshecha = historial.deshacerUltimaAccion();
 
-        String tipo    = accion.getTipo();
-        String detalle = accion.getDetalle();
+        if (accionDeshecha == null) {
+            System.out.println("📭 No hay acciones para deshacer.");
+            return;
+        }
+
+        String tipo = accionDeshecha.getTipo();
+        String detalle = accionDeshecha.getDetalle();
         boolean impacto = false;
 
         if ("Registrarse".equals(tipo) || "Agregar cliente".equals(tipo)) {
             impacto = gestorClientes.eliminarCliente(detalle);
-            if (impacto) System.out.println("🗑️  Usuario \"" + detalle + "\" eliminado.");
+            if (impacto) System.out.println("🗑️  Cliente \"" + detalle + "\" eliminado del sistema.");
 
-        } else if ("Seguir".equals(tipo) && detalle != null && detalle.contains(" -> ")) {
-            // Seguimiento directo → revertir quitando el seguido
-            String[] p = detalle.split(" -> ", 2);
-            if (p.length == 2) {
-                impacto = gestorClientes.quitarSeguido(p[0].trim(), p[1].trim());
+        } else if (("Aceptar solicitud".equals(tipo) || "Procesar solicitud".equals(tipo))
+                && detalle != null && detalle.contains(" -> ")) {
+            String[] partes = detalle.split(" -> ", 2);
+            if (partes.length == 2) {
+                impacto = gestorClientes.quitarSeguido(partes[0].trim(), partes[1].trim());
                 if (impacto) System.out.println("↩️  Seguimiento " + detalle + " revertido.");
             }
 
-        } else if ("Dejar de seguir".equals(tipo) && detalle != null && detalle.contains(" -> ")) {
-            // Dejar de seguir → revertir volviendo a seguir
-            String[] p = detalle.split(" -> ", 2);
-            if (p.length == 2) {
-                impacto = gestorClientes.agregarSeguido(p[0].trim(), p[1].trim());
-                if (impacto) System.out.println("↩️  Seguimiento " + detalle + " restaurado.");
-            }
-
-        } else if ("Enviar solicitud amistad".equals(tipo) && detalle != null && detalle.contains(" -> ")) {
-            // Cancelar una solicitud de amistad enviada
-            String[] p = detalle.split(" -> ", 2);
-            if (p.length == 2) {
-                impacto = colaSolicitudes.quitarSolicitud(new SolicitudSeguimiento(p[0].trim(), p[1].trim()));
-                if (impacto) System.out.println("↩️  Solicitud de amistad " + detalle + " cancelada.");
-            }
-
-        } else if ("Aceptar solicitud amistad".equals(tipo) && detalle != null && detalle.contains(" <-> ")) {
-            // Revertir una amistad aceptada
-            String[] p = detalle.split(" <-> ", 2);
-            if (p.length == 2) {
-                gestorClientes.eliminarAmistad(p[0].trim(), p[1].trim());
-                System.out.println("↩️  Amistad " + detalle + " eliminada.");
+        } else if ("Rechazar solicitud".equals(tipo) && detalle != null && detalle.contains(" -> ")) {
+            String[] partes = detalle.split(" -> ", 2);
+            if (partes.length == 2) {
+                colaSolicitudes.agregarSolicitud(new SolicitudSeguimiento(partes[0].trim(), partes[1].trim()));
+                System.out.println("↩️  Solicitud " + detalle + " restaurada a la cola.");
                 impacto = true;
             }
 
-        } else if ("Rechazar solicitud amistad".equals(tipo) && detalle != null && detalle.contains(" -> ")) {
-            // Restaurar una solicitud que fue rechazada
-            String[] p = detalle.split(" -> ", 2);
-            if (p.length == 2) {
-                colaSolicitudes.agregarSolicitud(new SolicitudSeguimiento(p[0].trim(), p[1].trim()));
-                System.out.println("↩️  Solicitud de amistad " + detalle + " restaurada.");
-                impacto = true;
+        } else if ("Seguir cliente".equals(tipo) && detalle != null && detalle.contains(" -> ")) {
+            String[] partes = detalle.split(" -> ", 2);
+            if (partes.length == 2) {
+                impacto = colaSolicitudes.quitarSolicitud(new SolicitudSeguimiento(partes[0].trim(), partes[1].trim()));
+                if (impacto) System.out.println("↩️  Solicitud " + detalle + " quitada de la cola.");
             }
 
         } else {
-            System.out.println("↩️  Accion deshecha: [" + tipo + "] " + detalle);
+            System.out.println("↩️  Accion deshecha del historial: [" + tipo + "] " + detalle);
             impacto = true;
         }
 
-        if (!impacto) System.out.println("⚠️  Accion removida del historial pero no habia datos que revertir.");
+        if (!impacto) {
+            System.out.println("⚠️  Accion removida del historial pero no habia datos que revertir: " + accionDeshecha);
+        }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  ACCIONES — consultas generales
-    // ─────────────────────────────────────────────────────────────────────────
+    private void listarSolicitudesPendientes() { // complejidad O(n)
+        System.out.println("\n=== 📋 Solicitudes Pendientes ===");
 
-    private void listarSolicitudesPendientes() {
-        System.out.println("\n=== 📋 Solicitudes de Amistad Pendientes ===");
         List<SolicitudSeguimiento> pendientes;
+
         if (usuarioLogueado != null) {
-            System.out.println("(Solicitudes de/para: " + usuarioLogueado.getNombre() + ")");
+            System.out.println("(Solo solicitudes que involucran a: " + usuarioLogueado.getNombre() + ")");
             pendientes = colaSolicitudes.listarPendientesParaUsuario(usuarioLogueado.getNombre());
         } else {
             pendientes = colaSolicitudes.listarPendientes();
         }
+
         if (pendientes.isEmpty()) {
-            System.out.println("📭 No hay solicitudes de amistad pendientes.");
+            System.out.println("📭 No hay solicitudes pendientes.");
         } else {
+            System.out.println("Total: " + pendientes.size() + " solicitud(es):");
             int i = 1;
             for (SolicitudSeguimiento s : pendientes) {
-                System.out.println("  " + i++ + ". " + s.getOrigen() + " ➡️  " + s.getDestino());
+                System.out.println("  " + i + ". " + s.getOrigen() + " ➡️  " + s.getDestino());
+                i++;
             }
         }
     }
 
-    private void listarUltimasAcciones() {
+    private void listarUltimasAcciones() { // complejidad O(n)
         System.out.println("\n=== 📜 Ultimas 10 Acciones ===");
         List<Accion> ultimas = historial.listarUltimas(10);
         if (ultimas.isEmpty()) {
             System.out.println("📭 No hay acciones registradas.");
         } else {
+            System.out.println("Mostrando " + ultimas.size() + " accion(es) (mas reciente primero):");
             int i = 1;
             for (Accion a : ultimas) {
-                System.out.println("  " + i++ + ". [" + a.getTipo() + "] " + a.getDetalle() + " (" + a.getFechaHora() + ")");
+                System.out.println("  " + i + ". [" + a.getTipo() + "] " + a.getDetalle() + " (" + a.getFechaHora() + ")");
+                i++;
             }
         }
     }
 
-    private static final int MAX_CLIENTES_MOSTRAR = 30;
-
-    private void listarTodosLosClientes() {
-        System.out.println("\n=== 👥 Lista de Usuarios ===");
+    private void listarTodosLosClientes() { // complejidad O(n)
+        System.out.println("\n=== 👥 Lista de Clientes ===");
         List<Cliente> clientes = gestorClientes.listarClientes();
         if (clientes.isEmpty()) {
-            System.out.println("📭 No hay usuarios registrados.");
+            System.out.println("📭 No hay clientes registrados.");
         } else {
-            int total = clientes.size();
-            int mostrar = Math.min(total, MAX_CLIENTES_MOSTRAR);
-            System.out.println("Total: " + total
-                    + (total > MAX_CLIENTES_MOSTRAR ? " (mostrando primeros " + MAX_CLIENTES_MOSTRAR + ")" : ""));
-            for (int i = 0; i < mostrar; i++) System.out.println("  - " + clientes.get(i));
+            System.out.println("Total: " + clientes.size() + " cliente(s):");
+            for (Cliente c : clientes) {
+                System.out.println("  - " + c);
+            }
         }
         historial.registrarAccion(new Accion("Listar clientes", "total=" + clientes.size()));
     }
 
-    private void verMisDatos() {
+    private void verMisDatos() { // complejidad O(1)
         System.out.println("\n=== 👤 Mis Datos ===");
-        String nombre = usuarioLogueado.getNombre();
-        Set<String> seguidos = gestorClientes.obtenerSeguidos(nombre);
-        Set<String> amigos   = gestorClientes.obtenerVecinos(nombre);
-        System.out.println("Nombre:      " + nombre);
-        System.out.println("Puntuacion:  " + usuarioLogueado.getScoring());
-        System.out.println("Siguiendo  (" + seguidos.size() + "): " + (seguidos.isEmpty() ? "(nadie)" : seguidos));
-        System.out.println("Amistades  (" + amigos.size()   + "): " + (amigos.isEmpty()   ? "(nadie)" : amigos));
+        System.out.println("Nombre:      " + usuarioLogueado.getNombre());
+        System.out.println("Scoring:     " + usuarioLogueado.getScoring());
+        System.out.println("Siguiendo  (" + usuarioLogueado.getSiguiendo().size() + "): "
+                + (usuarioLogueado.getSiguiendo().isEmpty() ? "(ninguno)" : usuarioLogueado.getSiguiendo()));
+        System.out.println("Conexiones (" + usuarioLogueado.getConexiones().size() + "): "
+                + (usuarioLogueado.getConexiones().isEmpty() ? "(ninguna)" : usuarioLogueado.getConexiones()));
     }
 
     private void consultarRedConexiones() {
         System.out.println("\n=== 🌳 Explorar Red de Contactos ===");
         String nombre = InputUtils.leerTextoNoVacio(scanner, "Ingrese el nombre del usuario: ");
+
         Cliente cliente = gestorClientes.buscarPorNombre(nombre);
-        if (cliente == null) { System.out.println("❌ No existe ese usuario."); return; }
+        if (cliente == null) {
+            System.out.println("❌ No existe un usuario con ese nombre.");
+            return;
+        }
 
-        Set<String> seguidos = gestorClientes.obtenerSeguidos(nombre);
-        System.out.println("\n📊 " + nombre + " sigue a: " + (seguidos.isEmpty() ? "(nadie)" : seguidos));
+        System.out.println("\n📊 Red de " + nombre + ":");
+        System.out.println("   Siguiendo: " + (cliente.getSiguiendo().isEmpty() ? "(nadie)" : cliente.getSiguiendo()));
 
-        List<Integer> nivel4 = gestorClientes.consultarConexionesNivel4(nombre);
-        if (nivel4.isEmpty()) {
-            System.out.println("🌳 " + nombre + " no tiene contactos lejanos suficientes en su red.");
+        List<Integer> scoringsNivel4 = gestorClientes.consultarConexionesNivel4(nombre);
+
+        if (scoringsNivel4.isEmpty()) {
+            System.out.println("\n🌳 " + nombre + " no tiene contactos lejanos suficientes en su red.");
+            System.out.println("   (Necesita más conexiones para descubrir personas distantes)");
         } else {
-            System.out.println("🌳 Personas descubiertas en la red extendida:");
-            for (int scoring : nivel4) {
-                List<Cliente> coincidentes = gestorClientes.buscarPorScoring(scoring);
-                for (Cliente c : coincidentes) {
-                    System.out.println("     - " + c.getNombre() + " (puntuacion: " + scoring + ")");
+            System.out.println("\n🌳 Personas descubiertas en tu red extendida:");
+            for (int scoring : scoringsNivel4) {
+                List<Cliente> clientes = gestorClientes.buscarPorScoring(scoring);
+                for (Cliente c : clientes) {
+                    System.out.println("     - " + c.getNombre() + " (puntuación: " + scoring + ")");
                 }
             }
         }
     }
 
-    private void verRelacionesUsuario() {
-        System.out.println("\n=== 🤝 Ver Seguidos y Amigos de un Usuario ===");
-        String nombre = InputUtils.leerTextoNoVacio(scanner, "Ingrese el nombre del usuario: ");
-        if (gestorClientes.buscarPorNombre(nombre) == null) {
-            System.out.println("❌ No existe ese usuario.");
-            return;
-        }
-        Set<String> seguidos = gestorClientes.obtenerSeguidos(nombre);
-        Set<String> amigos   = gestorClientes.obtenerVecinos(nombre);
-
-        System.out.println("\n➡️  Siguiendo (" + seguidos.size() + "): "
-                + (seguidos.isEmpty() ? "(nadie)" : seguidos));
-        System.out.println("🤝 Amistades  (" + amigos.size() + "): "
-                + (amigos.isEmpty() ? "(nadie)" : amigos));
-    }
-
-    private void calcularDistancia() {
-        System.out.println("\n=== 📏 Distancia entre Dos Usuarios ===");
-        String origen  = InputUtils.leerTextoNoVacio(scanner, "Ingrese el nombre del primer usuario: ");
-        String destino = InputUtils.leerTextoNoVacio(scanner, "Ingrese el nombre del segundo usuario: ");
-
-        if (gestorClientes.buscarPorNombre(origen) == null || gestorClientes.buscarPorNombre(destino) == null) {
-            System.out.println("❌ Uno o ambos usuarios no existen.");
-            return;
-        }
-
-        int distSeguimiento = gestorClientes.calcularDistanciaSeguimiento(origen, destino);
-        int distAmistad     = gestorClientes.calcularDistanciaAmistad(origen, destino);
-
-        System.out.println("\n📊 Distancia entre " + origen + " y " + destino + ":");
-        System.out.println("  ➡️  Por seguimiento: " + (distSeguimiento == -1 ? "sin camino" : distSeguimiento + " salto(s)"));
-        System.out.println("  🤝 Por amistad:      " + (distAmistad     == -1 ? "sin camino" : distAmistad     + " salto(s)"));
-    }
-
-    private void exportarAccionesCsv() {
+    private void exportarAccionesCsv() { // complejidad O(n)
         List<Accion> todas = historial.listarUltimas(1000);
         if (!todas.isEmpty()) {
             try {
