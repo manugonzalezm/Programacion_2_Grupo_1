@@ -296,13 +296,13 @@ public class StaticClientesTDA implements ClientesTDA {
 
         Queue<Integer> cola = new LinkedList<>();
         ConjuntoTDA<Integer> vecinosInicio = grafoDirigido.ObtenerAdyacentes(idInicio);
-        while (!vecinosInicio.ConjuntoVacio()) {
+        while (!vecinosInicio.ConjuntoVacio()) {   //O(grado(idInicio))
             int v = vecinosInicio.Elegir();
-            vecinosInicio.Sacar(v);
+            vecinosInicio.Sacar(v);          //DEPENTE implementacion: si es Hadhset: O(1), si es arreglo: O(n)
             cola.add(v);
         }
 
-        while (!cola.isEmpty()) {
+        while (!cola.isEmpty()) {             //El bucle principal de BFS
             int idActual = cola.poll();
             if (visitados.contains(idActual)) continue;
             visitados.add(idActual);
@@ -310,16 +310,16 @@ public class StaticClientesTDA implements ClientesTDA {
             String nombreActual = idANombre.get(idActual);
             Cliente c = (nombreActual != null) ? clientesPorNombre.get(nombreActual) : null;
             if (c != null) {
-                arbol.agregar(c.getScoring());
+                arbol.agregar(c.getScoring());// Insertar en ABB → O(log V), (peor caso O(V) si desbalanceado)
                 ConjuntoTDA<Integer> vecinos = grafoDirigido.ObtenerAdyacentes(idActual);
-                while (!vecinos.ConjuntoVacio()) {
+                while (!vecinos.ConjuntoVacio()) {     // Recorre todos los vecinos → suma total O(E)
                     int v = vecinos.Elegir();
                     vecinos.Sacar(v);
                     if (!visitados.contains(v)) cola.add(v);
                 }
             }
         }
-        return arbol.obtenerNivel(4);
+        return arbol.obtenerNivel(4);         // recorrer árbol hasta nivel 4 → O(V)
     }
 
     // BFS sobre cualquier GrafoLA, devuelve la distancia en saltos o -1 si no hay camino
